@@ -1,6 +1,6 @@
 --[[
 Name: LibRangeCheck-2.0
-Revision: $Revision: 66493 $
+Revision: $Revision$
 Author(s): mitch0
 Website: http://www.wowace.com/wiki/RangeCheck-1.0
 Documentation: http://www.wowace.com/wiki/RangeCheck-1.0
@@ -10,7 +10,7 @@ License: Public Domain
 ]]
 
 local MAJOR_VERSION = "LibRangeCheck-2.0"
-local MINOR_VERSION = tonumber(("$Revision: 66493 $"):match("%d+")) + 100000
+local MINOR_VERSION = tonumber(("$Revision$"):match("%d+")) + 100000
 
 local RangeCheck = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION);
 if (not RangeCheck) then
