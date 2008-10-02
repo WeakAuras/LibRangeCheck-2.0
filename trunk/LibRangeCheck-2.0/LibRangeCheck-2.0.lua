@@ -4,14 +4,13 @@ Revision: $Revision: 66493 $
 Author(s): mitch0
 Website: http://www.wowace.com/wiki/RangeCheck-1.0
 Documentation: http://www.wowace.com/wiki/RangeCheck-1.0
-SVN: http://svn.wowace.com/wowace/trunk/LibRangeCheck-2.0/
 Description: A range checking library based on interact distances and spell ranges
 Dependencies: LibStub
 License: Public Domain
 ]]
 
 local MAJOR_VERSION = "LibRangeCheck-2.0"
-local MINOR_VERSION = ("$Revision: 66493 $"):match("%d+")
+local MINOR_VERSION = tonumber(("$Revision: 66493 $"):match("%d+")) + 100000
 
 local RangeCheck = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION);
 if (not RangeCheck) then
