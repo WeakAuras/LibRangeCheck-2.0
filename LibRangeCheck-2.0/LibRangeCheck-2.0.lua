@@ -54,7 +54,8 @@ FriendSpells["DRUID"] = {
 HarmSpells["DRUID"] = {
 	5176, -- ["Wrath"], -- 30 (Nature's Reach: 33, 36)
 	16979, -- ["Feral Charge"], -- 8-25
-	6795, -- ["Growl"], -- 5
+	6795, -- ["Growl"], -- 5, 20 in wotlk
+	6807, -- ["Maul"], -- 5
 }
 
 FriendSpells["HUNTER"] = {}
@@ -123,6 +124,7 @@ HarmSpells["WARRIOR"] = {
 	3018, -- ["Shoot"], -- 8-30
 	2764, -- ["Throw"], -- 30
 	100, -- ["Charge"], -- 8-25
+	355, -- ["Taunt"], -- 5, 20 in wotlk
 	5246, -- ["Intimidating Shout"], -- 10
 	772, -- ["Rend"], -- 5
 }
@@ -394,7 +396,7 @@ function RangeCheck:startMeasurement(unit, resultTable)
 	if (spellList) then
 		for _, sid in ipairs(spellList) do
 			local name = GetSpellInfo(sid)
-			local spellIdx = self:findSpellIdx(name)
+			local spellIdx = findSpellIdx(name)
 			if (spellIdx) then
 				self.spellsToMeasure[name] = spellIdx
 			end
