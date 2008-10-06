@@ -2,7 +2,7 @@
 Name: LibRangeCheck-2.0
 Revision: $Revision$
 Author(s): mitch0
-Website: http://www.wowace.com/wiki/RangeCheck-1.0
+Website: http://www.wowace.com/projects/librangecheck-2-0/
 Documentation: http://www.wowace.com/wiki/RangeCheck-1.0
 Description: A range checking library based on interact distances and spell ranges
 Dependencies: LibStub
