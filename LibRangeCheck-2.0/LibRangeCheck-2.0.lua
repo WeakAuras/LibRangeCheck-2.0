@@ -3,7 +3,6 @@ Name: LibRangeCheck-2.0
 Revision: $Revision$
 Author(s): mitch0
 Website: http://www.wowace.com/projects/librangecheck-2-0/
-Documentation: http://www.wowace.com/wiki/RangeCheck-1.0
 Description: A range checking library based on interact distances and spell ranges
 Dependencies: LibStub
 License: Public Domain
@@ -137,6 +136,16 @@ HarmSpells["WARLOCK"] = {
 	172, -- ["Corruption"], -- 30 (Grim Reach: 33, 36)
 	5782, -- ["Fear"], -- 20 (Grim Reach: 22, 24)
 	17877, -- ["Shadowburn"], -- 20 (Destructive Reach: 22, 24)
+}
+
+FriendSpells["DEATHKNIGHT"] = {
+}
+HarmSpells["DEATHKNIGHT"] = {
+	47541, -- ["Death Coil"], -- 30
+	45477, -- ["Icy Touch"], -- 20 (Icy Reach: 25, 30)
+	56222, -- ["Dark Command"], -- 20
+	50842, -- ["Pestilence"], -- 5
+	45902, -- ["Blood Strike"], -- 5, but requires weapon, use Pestilence if possible, so keep it after Pestilence in this list
 }
 
 -- This could've been done by checking player race as well and creating tables for those, but it's easier like this
