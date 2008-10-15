@@ -18,7 +18,7 @@ end
 
 -- << STATIC CONFIG
 
-local ItemRequestTimeout = 2.0
+local ItemRequestTimeout = 10.0
 
 -- interact distance based checks. ranges are based on my own measurements (thanks for all the folks who helped me with this)
 local DefaultInteractList = {
@@ -162,10 +162,11 @@ local DeadZoneSpells = {
 
 FriendItems  = {
 	[5] = {
---WOTLK		37727, -- Ruby Acorn ### BOTH
+		37727, -- Ruby Acorn ### BOTH
 	},
 	[8] = {
---WOTLK		33278, -- Burning Torch ### BOTH
+		34368, -- Attuned Crystal Cores ### BOTH
+		33278, -- Burning Torch ### BOTH
 	},
 	[10] = {
 		32321, -- Sparrowhawk Net ### BOTH
@@ -183,10 +184,10 @@ FriendItems  = {
 		14530, -- Heavy Runecloth Bandage
 		21990, -- Netherweave Bandage
 		21991, -- Heavy Netherweave Bandage
---WOTLK		34721, -- Frostweave Bandage
---WOTLK		34722, -- Heavy Frostweave Bandage
---WOTLK		38643, -- Thick Frostweave Bandage
---WOTLK		38640, -- Dense Frostweave Bandage
+		34721, -- Frostweave Bandage
+		34722, -- Heavy Frostweave Bandage
+		38643, -- Thick Frostweave Bandage
+		38640, -- Dense Frostweave Bandage
 	},
 	[20] = {
 		21519, -- Mistletoe
@@ -209,19 +210,21 @@ FriendItems  = {
 		32698, -- Wrangling Rope ### BOTH
 	},
 	[60] = {
---WOTLK		37887, -- Seeds of Nature's Wrath ### BOTH
+		32825, -- Soul Cannon ### BOTH
+		37887, -- Seeds of Nature's Wrath ### BOTH
 	},
 	[80] = {
---WOTLK		35278, -- Reinforced Net ### BOTH
+		35278, -- Reinforced Net ### BOTH
 	},
 }
 
 HarmItems = {
 	[5] = {
---WOTLK		37727, -- Ruby Acorn ### BOTH
+		37727, -- Ruby Acorn ### BOTH
 	},
 	[8] = {
---WOTLK		33278, -- Burning Torch ### BOTH
+		34368, -- Attuned Crystal Cores ### BOTH
+		33278, -- Burning Torch ### BOTH
 	},
 	[10] = {
 		32321, -- Sparrowhawk Net ### BOTH
@@ -234,7 +237,7 @@ HarmItems = {
 	},
 	[25] = {
 		24268, -- Netherweave Net
---WOTLK		41509, -- Frostweave Net
+		41509, -- Frostweave Net
 		31463, -- Zezzak's Shard ### BOTH
 	},
 	[30] = {
@@ -242,7 +245,7 @@ HarmItems = {
 		7734, -- Six Demon Bag
 	},
 	[35] = {
-		24269, -- Heavy Netherweave Net ### not in game ???
+		24269, -- Heavy Netherweave Net
 	},
 	[40] = {
 		28767, -- The Decapitator
@@ -251,10 +254,11 @@ HarmItems = {
 		32698, -- Wrangling Rope ### BOTH
 	},
 	[60] = {
---WOTLK		37887, -- Seeds of Nature's Wrath ### BOTH
+		32825, -- Soul Cannon ### BOTH
+		37887, -- Seeds of Nature's Wrath ### BOTH
 	},
 	[80] = {
---WOTLK		35278, -- Reinforced Net ### BOTH
+		35278, -- Reinforced Net ### BOTH
 	},
 }
 
@@ -346,9 +350,9 @@ end
 
 local function addItemRequest(item)
 	if (itemRequests == nil) then
-		itemRequests = { item }
+		itemRequests = { [item] = true }
 	else
-		tinsert(itemRequests, item)
+		itemRequests[item] = true
 	end
 end
 
@@ -591,15 +595,15 @@ end
 function RangeCheck:initialOnUpdate()
 		self:init()
 		if (itemRequests ~= nil) then
-			local item = itemRequests[#(itemRequests)]
+			local item = next(itemRequests)
 			if (itemRequestTimeoutAt == nil) then
 				requestItemInfo(item)
 				return
 			end
 			if (GetItemInfo(item) or (GetTime() > itemRequestTimeoutAt)) then
-				tremove(itemRequests)
-				if (#(itemRequests) > 0) then
-					item = itemRequests[#(itemRequests)]
+				itemRequests[item] = nil
+				item = next(itemRequests)
+				if (item) then
 					requestItemInfo(item)
 					return
 				else -- clean up, and force a reinit
@@ -616,6 +620,21 @@ function RangeCheck:initialOnUpdate()
 end
 
 -- << DEBUG STUFF
+local function pairsByKeys(t, f)
+	local a = {}
+	for n in pairs(t) do table.insert(a, n) end
+	table.sort(a, f)
+	local i = 0
+	local iter = function ()
+		i = i + 1
+		if a[i] == nil then
+			return nil
+		else
+			return a[i], t[a[i]]
+		end
+	end
+	return iter
+end
 
 local function addItemRequests(itemList)
 	if (itemList == nil)  then return end
@@ -685,11 +704,11 @@ end
 
 function RangeCheck:checkItems(itemList)
 	if (itemList == nil) then return end
-	for range, items in pairs(itemList) do
+	for range, items in pairsByKeys(itemList) do
 		for _, item in ipairs(items) do
 			local name = GetItemInfo(item)
 			if (name == nil) then
-				print(MAJOR_VERSION .. ": " .. tostring(item) .. ": not in cache")
+				print(MAJOR_VERSION .. ": " .. tostring(item) .. ": " .. tostring(range) .. "yd: not in cache")
 			else
 				print(MAJOR_VERSION .. ": " .. tostring(item) .. ": " .. tostring(name) .. ": " .. tostring(range) .. "yd: " .. tostring(IsItemInRange(item, "target")))
 			end
