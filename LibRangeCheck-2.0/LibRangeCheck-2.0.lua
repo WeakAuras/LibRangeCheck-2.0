@@ -11,12 +11,14 @@ License: Public Domain
 local MAJOR_VERSION = "LibRangeCheck-2.0"
 local MINOR_VERSION = tonumber(("$Revision$"):match("%d+")) + 100000
 
-local RangeCheck = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION);
+local RangeCheck = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
 if (not RangeCheck) then
 	return
 end
 
 -- << STATIC CONFIG
+
+local ItemRequestTimeout = 2.0
 
 -- interact distance based checks. ranges are based on my own measurements (thanks for all the folks who helped me with this)
 local DefaultInteractList = {
@@ -44,7 +46,7 @@ local VisibleRange = 100
 
 -- list of friendly spells that have different ranges
 local FriendSpells = {}
--- list of harmful spells that have different ranges
+-- list of harmful spells that have different ranges, spells with DeadZone must come first!
 local HarmSpells = {}
 
 FriendSpells["DRUID"] = {
@@ -52,8 +54,8 @@ FriendSpells["DRUID"] = {
 	1126, -- ["Mark of the Wild"], -- 30
 }
 HarmSpells["DRUID"] = {
-	5176, -- ["Wrath"], -- 30 (Nature's Reach: 33, 36)
 	16979, -- ["Feral Charge"], -- 8-25
+	5176, -- ["Wrath"], -- 30 (Nature's Reach: 33, 36)
 	6795, -- ["Growl"], -- 5, 20 in wotlk
 	6807, -- ["Maul"], -- 5
 }
@@ -121,9 +123,9 @@ HarmSpells["SHAMAN"] = {
 
 FriendSpells["WARRIOR"] = {}
 HarmSpells["WARRIOR"] = {
+	100, -- ["Charge"], -- 8-25
 	3018, -- ["Shoot"], -- 8-30
 	2764, -- ["Throw"], -- 30
-	100, -- ["Charge"], -- 8-25
 	355, -- ["Taunt"], -- 5, 20 in wotlk
 	5246, -- ["Intimidating Shout"], -- 10
 	772, -- ["Rend"], -- 5
@@ -150,6 +152,115 @@ HarmSpells["DEATHKNIGHT"] = {
 	45902, -- ["Blood Strike"], -- 5, but requires weapon, use Pestilence if possible, so keep it after Pestilence in this list
 }
 
+local DeadZoneSpells = {
+	["DRUID"] = 16979, -- ["Feral Charge"], -- 8-25
+	["HUNTER"] = 75, -- ["Auto Shot"], -- 8-35 (Hawk Eye: 37, 39, 41)
+	["WARRIOR"] = 100, -- ["Charge"], -- 8-25
+}
+
+-- Items [Special thanks to Maldivia for the nice list]
+
+FriendItems  = {
+	[5] = {
+--WOTLK		37727, -- Ruby Acorn ### BOTH
+	},
+	[8] = {
+--WOTLK		33278, -- Burning Torch ### BOTH
+	},
+	[10] = {
+		32321, -- Sparrowhawk Net ### BOTH
+	},
+	[15] = {
+		1251, -- Linen Bandage
+		2581, -- Heavy Linen Bandage
+		3530, -- Wool Bandage
+		3531, -- Heavy Wool Bandage
+		6450, -- Silk Bandage
+		6451, -- Heavy Silk Bandage
+		8544, -- Mageweave Bandage
+		8545, -- Heavy Mageweave Bandage
+		14529, -- Runecloth Bandage
+		14530, -- Heavy Runecloth Bandage
+		21990, -- Netherweave Bandage
+		21991, -- Heavy Netherweave Bandage
+--WOTLK		34721, -- Frostweave Bandage
+--WOTLK		34722, -- Heavy Frostweave Bandage
+--WOTLK		38643, -- Thick Frostweave Bandage
+--WOTLK		38640, -- Dense Frostweave Bandage
+	},
+	[20] = {
+		21519, -- Mistletoe
+	},
+	[25] = {
+		31463, -- Zezzak's Shard ### BOTH
+	},
+	[30] = {
+		1180, -- Scroll of Stamina
+		1478, -- Scroll of Protection II
+		3012, -- Scroll of Agility
+		1712, -- Scroll of Spirit II
+		2290, -- Scroll of Intellect II
+		1711, -- Scroll of Stamina II
+	},
+	[40] = {
+		34471, -- Vial of the Sunwell
+	},
+	[45] = {
+		32698, -- Wrangling Rope ### BOTH
+	},
+	[60] = {
+--WOTLK		37887, -- Seeds of Nature's Wrath ### BOTH
+	},
+	[80] = {
+--WOTLK		35278, -- Reinforced Net ### BOTH
+	},
+}
+
+HarmItems = {
+	[5] = {
+--WOTLK		37727, -- Ruby Acorn ### BOTH
+	},
+	[8] = {
+--WOTLK		33278, -- Burning Torch ### BOTH
+	},
+	[10] = {
+		32321, -- Sparrowhawk Net ### BOTH
+	},
+	[15] = {
+		33069, -- Sturdy Rope
+	},
+	[20] = {
+		10645, -- Gnomish Death Ray
+	},
+	[25] = {
+		24268, -- Netherweave Net
+--WOTLK		41509, -- Frostweave Net
+		31463, -- Zezzak's Shard ### BOTH
+	},
+	[30] = {
+		835, -- Large Rope Net
+		7734, -- Six Demon Bag
+	},
+	[35] = {
+		24269, -- Heavy Netherweave Net ### not in game ???
+	},
+	[40] = {
+		28767, -- The Decapitator
+	},
+	[45] = {
+		32698, -- Wrangling Rope ### BOTH
+	},
+	[60] = {
+--WOTLK		37887, -- Seeds of Nature's Wrath ### BOTH
+	},
+	[80] = {
+--WOTLK		35278, -- Reinforced Net ### BOTH
+	},
+}
+
+MiscItems = {
+}
+
 -- This could've been done by checking player race as well and creating tables for those, but it's easier like this
 for k, v in pairs(FriendSpells) do
 	tinsert(v, 28880) -- ["Gift of the Naaru"]
@@ -164,6 +275,7 @@ end
 
 local BOOKTYPE_SPELL = BOOKTYPE_SPELL
 local GetSpellInfo = GetSpellInfo
+local GetItemInfo = GetItemInfo
 local UnitCanAttack = UnitCanAttack
 local UnitCanAssist = UnitCanAssist
 local UnitExists = UnitExists
@@ -171,10 +283,18 @@ local UnitIsDeadOrGhost = UnitIsDeadOrGhost
 local tonumber = tonumber
 local CheckInteractDistance = CheckInteractDistance
 local IsSpellInRange = IsSpellInRange
+local IsItemInRange = IsItemInRange
 local UnitIsVisible = UnitIsVisible
 local tinsert = tinsert
 local GetInventoryItemLink = GetInventoryItemLink
+local GetTime = GetTime
 local HandSlotId = GetInventorySlotInfo("HandsSlot")
+local TT = ItemRefTooltip
+
+-- temporary stuff
+
+local itemRequests = nil
+local itemRequestTimeoutAt = nil
 
 -- helper functions
 
@@ -184,8 +304,16 @@ local function print(text)
 	end
 end
 
+local function requestItemInfo(itemId)
+	itemRequestTimeoutAt = GetTime() + ItemRequestTimeout
+	if (itemId == nil or GetItemInfo(itemId)) then return end
+	TT:SetHyperlink(string.format("item:%d", itemId))
+end
+
 -- minRangeCheck is a function to check if spells with minimum range are really out of range, or fail due to range < minRange. See :init() for its setup
 local minRangeCheck = function(unit) return CheckInteractDistance(unit, 2) end
+
+local deadZoneCheck = nil
 
 local function isTargetValid(unit)
 	return UnitExists(unit) and (not UnitIsDeadOrGhost(unit))
@@ -216,8 +344,17 @@ local function addChecker(t, range, minRange, checker)
 	tinsert(t, rc)
 end
 
-local function createCheckerList(spellList, interactList)
+local function addItemRequest(item)
+	if (itemRequests == nil) then
+		itemRequests = { item }
+	else
+		tinsert(itemRequests, item)
+	end
+end
+
+local function createCheckerList(spellList, interactList, itemList, doItemReq)
 	local res = {}
+	local ranges = {}
     if (spellList) then
 	    for i, sid in ipairs(spellList) do
 			local name, _, _, _, _, _, _, minRange, range = GetSpellInfo(sid)
@@ -229,24 +366,56 @@ local function createCheckerList(spellList, interactList)
 				if (range == 0) then
 					range = MeleeRange
 				end
-				addChecker(res, range, minRange, function(unit)
-					if (IsSpellInRange(spellIdx, BOOKTYPE_SPELL, unit) == 1) then return true end
-				end)
+				if (not ranges[range]) then
+					ranges[range] = true
+					addChecker(res, range, minRange, function(unit)
+						if (IsSpellInRange(spellIdx, BOOKTYPE_SPELL, unit) == 1) then return true end
+					end)
+				end
 			end
 	    end
     end
+	
+	if (itemList) then
+		for range, items in pairs(itemList) do
+			if ((not ranges[range]) and (#(items) > 0)) then
+				local itemReq = nil
+				for i, item in ipairs(items) do
+					if (GetItemInfo(item)) then
+						itemReq = nil
+						ranges[range] = true
+						addChecker(res, range, nil, function(unit)
+							if (IsItemInRange(item, unit) == 1) then return true end
+						end)
+						break
+					end
+					if (itemReq == nil) then
+						itemReq = item -- we will request caching of the first item from the list if we can't find any of them in the cache
+					end
+				end
+				if (doItemReq and itemReq ~= nil) then
+					addItemRequest(itemReq)
+				end
+			end
+		end
+	end
+	
 	if (not interactList) then interactList = DefaultInteractList end
 	for index, range in pairs(interactList) do
-		addChecker(res, range, nil, function(unit)
-			if (CheckInteractDistance(unit, index)) then return true end
-		end)
+		if (not ranges[range]) then
+			ranges[range] = true
+			addChecker(res, range, nil, function(unit)
+				if (CheckInteractDistance(unit, index)) then return true end
+			end)
+		end
     end
+
     return res
 end
 
--- returns minRange, maxRange or nil
+-- returns minRange, maxRange, isInDeadZone or nil
 local function getRange(unit, checkerList, checkVisible)
-	local min, max = 0, nil
+	local min, max, isInDeadZone = 0, nil, nil
     if (checkVisible) then
     	if (UnitIsVisible(unit)) then
     		max = VisibleRange
@@ -262,15 +431,16 @@ local function getRange(unit, checkerList, checkVisible)
 					min = rc.minRange
 				end
 			elseif (rc.minRange and minRangeCheck(unit)) then
+				isInDeadZone = true
 				max = rc.minRange
 			elseif (min > rc.range) then
-				return min, max
+				return min, max, nil
 			else
-				return rc.range, max
+				return rc.range, max, isInDeadZone
 			end
 		end
     end
-    return min, max
+    return min, max, isInDeadZone and (max > 5)
 end
 
 -- OK, here comes the actual lib
@@ -288,6 +458,18 @@ RangeCheck.harmRC = RangeCheck.miscRC
 -- "export" it, maybe someone will need it for formatting
 RangeCheck.MeleeRange = MeleeRange
 RangeCheck.VisibleRange = VisibleRange
+
+-- returns if the unit (default="player") has a deadZone (or will have one later)
+function RangeCheck:hasDeadZone(unit)
+	unit = unit or "player"
+	local _, playerClass = UnitClass(unit)
+	return (DeadZoneSpells[playerClass] ~= nil)
+end
+
+-- returns if the player is in deadZone regarding unit
+function RangeCheck:isInDeadZone(unit)
+	return (deadZoneCheck and deadZoneCheck(unit))
+end
 
 -- returns minRange, maxRange or nil
 function RangeCheck:getRange(unit, checkVisible)
@@ -314,31 +496,48 @@ end
 -- initialize RangeCheck if not yet initialized or if "forced"
 function RangeCheck:init(forced)
 	if (self.initialized and (not forced)) then return end
+	local doItemReq = not self.initialized
 	self.initialized = true
 	local _, playerClass = UnitClass("player")
 	local _, playerRace = UnitRace("player")
 
 	minRangeCheck = nil
-	if (playerClass == "WARRIOR") then
-		-- for warriors, use Intimidating Shout if available
-		local name = GetSpellInfo(5246) -- ["Intimidating Shout"]
-		local spellIdx = findSpellIdx(name)
-		if (spellIdx) then
-			minRangeCheck = function(unit)
-				return (IsSpellInRange(spellIdx, BOOKTYPE_SPELL, unit) == 1)
-			end
-		end
-	elseif (playerClass == "ROGUE") then
-		-- for rogues, use Blind if available
-		local name = GetSpellInfo(2094) -- ["Blind"]
-		local spellIdx = findSpellIdx(name)
-		if (spellIdx) then
-			minRangeCheck = function(unit)
-				return (IsSpellInRange(spellIdx, BOOKTYPE_SPELL, unit) == 1)
+	-- first try to find a nice item we can use for minRangeCheck
+	if (HarmItems[15]) then
+		local items = HarmItems[15]
+		for _, item in ipairs(items) do
+			if (GetItemInfo(item)) then
+				minRangeCheck = function(unit)
+					return (IsItemInRange(item, unit) == 1)
+				end
+				break
 			end
 		end
 	end
 	if (not minRangeCheck) then
+		-- ok, then try to find some class specific spell
+		if (playerClass == "WARRIOR") then
+			-- for warriors, use Intimidating Shout if available
+			local name = GetSpellInfo(5246) -- ["Intimidating Shout"]
+			local spellIdx = findSpellIdx(name)
+			if (spellIdx) then
+				minRangeCheck = function(unit)
+					return (IsSpellInRange(spellIdx, BOOKTYPE_SPELL, unit) == 1)
+				end
+			end
+		elseif (playerClass == "ROGUE") then
+			-- for rogues, use Blind if available
+			local name = GetSpellInfo(2094) -- ["Blind"]
+			local spellIdx = findSpellIdx(name)
+			if (spellIdx) then
+				minRangeCheck = function(unit)
+					return (IsSpellInRange(spellIdx, BOOKTYPE_SPELL, unit) == 1)
+				end
+			end
+		end
+	end
+	if (not minRangeCheck) then
+		-- fall back to interact distance checks
 		if  (playerClass == "HUNTER" or playerRace == "Tauren") then
 			-- for hunters, use interact4 as it's safer
 			-- for Taurens interact4 is actually closer than 25yd and interact2 is closer than 8yd, so we can't use that
@@ -349,10 +548,22 @@ function RangeCheck:init(forced)
 	end
 
 	local interactList = InteractLists[playerRace]
-	self.friendRC = createCheckerList(FriendSpells[playerClass], interactList)
-	self.harmRC = createCheckerList(HarmSpells[playerClass], interactList)
-	self.miscRC = createCheckerList(nil, interactList)
+	self.friendRC = createCheckerList(FriendSpells[playerClass], interactList, FriendItems, doItemReq)
+	self.harmRC = createCheckerList(HarmSpells[playerClass], interactList, HarmItems, doItemReq)
+	self.miscRC = createCheckerList(nil, interactList, MiscItems, doItemReq)
 	self.handSlotItem = GetInventoryItemLink("player", HandSlotId)
+
+	deadZoneCheck = nil
+	local deadZoneSpell = DeadZoneSpells[playerClass]
+	if (deadZoneSpell) then
+		local name = GetSpellInfo(deadZoneSpell)
+		local spellIdx = findSpellIdx(name)
+		if (spellIdx) then
+			deadZoneCheck = function(unit)
+				return (IsSpellInRange(spellIdx, BOOKTYPE_SPELL, unit) == 0 and minRangeCheck(unit))
+			end
+		end
+	end
 end
 
 -- >> Public API
@@ -377,9 +588,63 @@ function RangeCheck:UNIT_INVENTORY_CHANGED(event, unit)
 	end
 end
 
+function RangeCheck:initialOnUpdate()
+		self:init()
+		if (itemRequests ~= nil) then
+			local item = itemRequests[#(itemRequests)]
+			if (itemRequestTimeoutAt == nil) then
+				requestItemInfo(item)
+				return
+			end
+			if (GetItemInfo(item) or (GetTime() > itemRequestTimeoutAt)) then
+				tremove(itemRequests)
+				if (#(itemRequests) > 0) then
+					item = itemRequests[#(itemRequests)]
+					requestItemInfo(item)
+					return
+				else -- clean up, and force a reinit
+					itemRequests = nil
+					itemRequestTimeoutAt = nil
+					self:init(true)
+				end
+			else
+				return -- still waiting for the answer
+			end
+		end
+		self.frame:SetScript("OnUpdate", nil)
+		self.frame:Hide()
+end
+
 -- << DEBUG STUFF
 
+local function addItemRequests(itemList)
+	if (itemList == nil)  then return end
+	for _, items in pairs(itemList) do
+		for _, item in ipairs(items) do
+			addItemRequest(item)
+		end
+	end
+end
+
+function RangeCheck:cacheAllItems()
+	if ((not self.initialized) or (itemRequests ~= nil)) then
+		print(MAJOR_VERSION .. ": init hasn't finished yet")
+		return
+	end
+	addItemRequests(FriendItems)
+	addItemRequests(HarmItems)
+	addItemRequests(MiscItems)
+	if (itemRequests == nil) then return end
+	print(MAJOR_VERSION .. ": starting item cache")
+	self.frame:SetScript("OnUpdate", function(frame, elapsed) self:initialOnUpdate() end)
+	self.frame:Show()
+end
+
 function RangeCheck:startMeasurement(unit, resultTable)
+	if ((not self.initialized) or (itemRequests ~= nil)) then
+		print(MAJOR_VERSION .. ": init hasn't finished yet")
+		return
+	end
 	if (self.measurements) then
 		print(MAJOR_VERSION .. ": measurements already running")
 		return
@@ -418,11 +683,33 @@ function RangeCheck:stopMeasurement()
 	self.measurements = nil
 end
 
-local GetTime = GetTime
+function RangeCheck:checkItems(itemList)
+	if (itemList == nil) then return end
+	for range, items in pairs(itemList) do
+		for _, item in ipairs(items) do
+			local name = GetItemInfo(item)
+			if (name == nil) then
+				print(MAJOR_VERSION .. ": " .. tostring(item) .. ": not in cache")
+			else
+				print(MAJOR_VERSION .. ": " .. tostring(item) .. ": " .. tostring(name) .. ": " .. tostring(range) .. "yd: " .. tostring(IsItemInRange(item, "target")))
+			end
+		end
+	end
+end
+
+function RangeCheck:checkAllItems()
+	print(MAJOR_VERSION .. ": Checking FriendItems...")
+	self:checkItems(FriendItems)
+	print(MAJOR_VERSION .. ": Checking HarmItems...")
+	self:checkItems(HarmItems)
+	print(MAJOR_VERSION .. ": Checking MiscItems...")
+	self:checkItems(MiscItems)
+end
+
 local GetPlayerMapPosition = GetPlayerMapPosition
 function RangeCheck:updateMeasurements()
 	local now = GetTime() - self.measurementStart
-	local x, y = GetPlayerMapPosition("player");
+	local x, y = GetPlayerMapPosition("player")
 	local t = self.measurements[now]
 	local unit = self.measurementUnit
 	for name, id in pairs(self.spellsToMeasure) do
@@ -473,11 +760,7 @@ function RangeCheck:activate()
 		end
     end
 	self.frame:SetScript("OnEvent", function(frame, ...) self:OnEvent(...) end)
-	self.frame:SetScript("OnUpdate", function(frame, ...)
-		self:init()
-		frame:SetScript("OnUpdate", nil)
-		frame:Hide()
-	end)
+	self.frame:SetScript("OnUpdate", function(frame, ...) self:initialOnUpdate() end)
 end
 
 RangeCheck:activate()
