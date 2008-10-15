@@ -1,4 +1,4 @@
-## Interface: 20400
+## Interface: 30000
 ## Title: Lib: RangeCheck-2.0
 ## Notes: A library to determine estimated range.
 ## Author: mitch0
@@ -7,7 +7,6 @@
 ## X-Category: Library
 ## X-AceLibrary-LibRangeCheck-2.0: true
 ## X-License: Public Domain
-## X-AceForum: 6664
 
 LibStub.lua
 LibRangeCheck-2.0\LibRangeCheck-2.0.lua
