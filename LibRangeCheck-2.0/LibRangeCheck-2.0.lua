@@ -51,12 +51,14 @@ local HarmSpells = {}
 
 FriendSpells["DRUID"] = {
 	5185, -- ["Healing Touch"], -- 40
+	467, -- ["Thorns"], -- 30 (Nature's Reach: 33, 36)
 	1126, -- ["Mark of the Wild"], -- 30
 }
 HarmSpells["DRUID"] = {
 	16979, -- ["Feral Charge"], -- 8-25
 	5176, -- ["Wrath"], -- 30 (Nature's Reach: 33, 36)
-	6795, -- ["Growl"], -- 5, 20 in wotlk
+	33786, -- ["Cyclone"], -- 20 (Nature's Reach: 22, 24)
+	6795, -- ["Growl"], -- 20
 	6807, -- ["Maul"], -- 5
 }
 
@@ -126,7 +128,7 @@ HarmSpells["WARRIOR"] = {
 	100, -- ["Charge"], -- 8-25
 	3018, -- ["Shoot"], -- 8-30
 	2764, -- ["Throw"], -- 30
-	355, -- ["Taunt"], -- 5, 20 in wotlk
+	355, -- ["Taunt"], -- 20
 	5246, -- ["Intimidating Shout"], -- 10
 	772, -- ["Rend"], -- 5
 }
