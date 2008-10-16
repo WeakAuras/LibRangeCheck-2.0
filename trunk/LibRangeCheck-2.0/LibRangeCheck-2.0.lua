@@ -316,6 +316,31 @@ local function requestItemInfo(itemId)
 	TT:SetHyperlink(string.format("item:%d", itemId))
 end
 
+local function copyTable(src, dest)
+	if (type(dest) ~= "table") then dest = {} end
+	if (type(src) == "table") then
+		for k, v in pairs(src) do
+			if type(v) == "table" then
+				v = copyTable(v)
+			end
+			dest[k] = v
+		end
+	end
+	return dest
+end
+
+--[[ TODO: 
+
+Item caching plan:
+
+- get rid of MiscItems, haven't found any items that work on "misc" targets
+- dup the Item tables
+- try to grab at least 1 item from each category/range
+- if we have an item for the given range, remove the whole list (from this working copy)
+- keep track of failed items (some items are present in both categories)
+
+]]--
+
 -- minRangeCheck is a function to check if spells with minimum range are really out of range, or fail due to range < minRange. See :init() for its setup
 local minRangeCheck = function(unit) return CheckInteractDistance(unit, 2) end
 
