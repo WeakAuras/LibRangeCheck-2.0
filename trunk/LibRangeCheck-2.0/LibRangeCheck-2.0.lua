@@ -259,9 +259,6 @@ HarmItems = {
 	},
 }
 
-MiscItems = {
-}
-
 -- This could've been done by checking player race as well and creating tables for those, but it's easier like this
 for k, v in pairs(FriendSpells) do
 	tinsert(v, 28880) -- ["Gift of the Naaru"]
@@ -328,7 +325,6 @@ end
 
 Item caching plan:
 
-- get rid of MiscItems, haven't found any items that work on "misc" targets
 - dup the Item tables
 - try to grab at least 1 item from each category/range
 - if we have an item for the given range, remove the whole list (from this working copy)
@@ -402,7 +398,7 @@ local function createCheckerList(spellList, interactList, itemList, doItemReq)
 	
 	if (itemList) then
 		for range, items in pairs(itemList) do
-			if ((not ranges[range]) and (#(items) > 0)) then
+			if ((not ranges[range]) and next(items)) then
 				local itemReq = nil
 				for i, item in ipairs(items) do
 					if (GetItemInfo(item)) then
@@ -561,7 +557,7 @@ function RangeCheck:init(forced)
 	local interactList = InteractLists[playerRace]
 	self.friendRC = createCheckerList(FriendSpells[playerClass], interactList, FriendItems, doItemReq)
 	self.harmRC = createCheckerList(HarmSpells[playerClass], interactList, HarmItems, doItemReq)
-	self.miscRC = createCheckerList(nil, interactList, MiscItems, doItemReq)
+	self.miscRC = createCheckerList(nil, interactList, nil, doItemReq)
 	self.handSlotItem = GetInventoryItemLink("player", HandSlotId)
 end
 
@@ -647,7 +643,6 @@ function RangeCheck:cacheAllItems()
 	end
 	addItemRequests(FriendItems)
 	addItemRequests(HarmItems)
-	addItemRequests(MiscItems)
 	if (itemRequests == nil) then return end
 	print(MAJOR_VERSION .. ": starting item cache")
 	self.frame:SetScript("OnUpdate", function(frame, elapsed) self:initialOnUpdate() end)
@@ -716,8 +711,6 @@ function RangeCheck:checkAllItems()
 	self:checkItems(FriendItems)
 	print(MAJOR_VERSION .. ": Checking HarmItems...")
 	self:checkItems(HarmItems)
-	print(MAJOR_VERSION .. ": Checking MiscItems...")
-	self:checkItems(MiscItems)
 end
 
 local GetPlayerMapPosition = GetPlayerMapPosition
