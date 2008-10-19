@@ -78,7 +78,7 @@ FriendSpells["MAGE"] = {
 HarmSpells["MAGE"] = {
     133, -- ["Fireball"], -- 35 (Flame Throwing: 38, 41)
     116, -- ["Frostbolt"], -- 30 (Arctic Reach: 33, 36)
-        5143, -- ["Arcane Missiles"], -- 30 (Magic Attunement: 33, 36)
+    5143, -- ["Arcane Missiles"], -- 30 (Magic Attunement: 33, 36)
     2948, -- ["Scorch"], -- 30 (Flame Throwing: 33, 36)
     5019, -- ["Shoot"], -- 30
     2136, -- ["Fire Blast"], -- 20 (Flame Throwing: 23, 26; Gladiator Gloves: +5)
@@ -600,7 +600,7 @@ function RangeCheck:processItemRequests(itemRequests)
                 end
                 if (not cacheAllItems) then
                     itemRequests[range] = nil
-                    break;
+                    break
                 end
                 tremove(items, i)   
             elseif (not itemRequestTimeoutAt) then
