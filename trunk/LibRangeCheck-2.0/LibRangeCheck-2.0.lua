@@ -470,6 +470,14 @@ RangeCheck.failedItemRequests = {}
 RangeCheck.MeleeRange = MeleeRange
 RangeCheck.VisibleRange = VisibleRange
 
+function RangeCheck:findSpellIndex(spell)
+    if (type(spell) == 'number') then
+        spell = GetSpellInfo(spell)
+    end
+    if (not spell) then return nil end
+    return findSpellIdx(spell)
+end
+
 -- returns minRange, maxRange or nil
 function RangeCheck:getRange(unit, checkVisible)
     if (not isTargetValid(unit)) then return nil end
