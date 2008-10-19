@@ -72,7 +72,7 @@ HarmSpells["HUNTER"] = {
 }
 
 FriendSpells["MAGE"] = {
-    23028, -- ["Arcane Brilliance"], -- 40
+    475, -- ["Remove Curse"], -- 40
     1459, -- ["Arcane Intellect"], -- 30
 }
 HarmSpells["MAGE"] = {
@@ -163,7 +163,7 @@ FriendItems  = {
     },
     [8] = {
         34368, -- Attuned Crystal Cores
-        33278, -- Burning Torch
+--WOTLK        33278, -- Burning Torch
     },
     [10] = {
         32321, -- Sparrowhawk Net
@@ -183,8 +183,8 @@ FriendItems  = {
         21991, -- Heavy Netherweave Bandage
         34721, -- Frostweave Bandage
         34722, -- Heavy Frostweave Bandage
-        38643, -- Thick Frostweave Bandage
-        38640, -- Dense Frostweave Bandage
+--WOTLK        38643, -- Thick Frostweave Bandage
+--WOTLK        38640, -- Dense Frostweave Bandage
     },
     [20] = {
         21519, -- Mistletoe
@@ -212,10 +212,10 @@ FriendItems  = {
     },
     [60] = {
         32825, -- Soul Cannon
-        37887, -- Seeds of Nature's Wrath
+--WOTLK        37887, -- Seeds of Nature's Wrath
     },
     [80] = {
-        35278, -- Reinforced Net
+--WOTLK        35278, -- Reinforced Net
     },
 }
 
@@ -225,7 +225,7 @@ HarmItems = {
     },
     [8] = {
         34368, -- Attuned Crystal Cores
-        33278, -- Burning Torch
+--WOTLK        33278, -- Burning Torch
     },
     [10] = {
         32321, -- Sparrowhawk Net
@@ -258,10 +258,10 @@ HarmItems = {
     },
     [60] = {
         32825, -- Soul Cannon
-        37887, -- Seeds of Nature's Wrath
+--WOTLK        37887, -- Seeds of Nature's Wrath
     },
     [80] = {
-        35278, -- Reinforced Net
+--WOTLK        35278, -- Reinforced Net
     },
 }
 
@@ -608,6 +608,9 @@ function RangeCheck:processItemRequests(itemRequests)
                 itemRequestTimeoutAt = GetTime() + ItemRequestTimeout
                 return true
             elseif (GetTime() > itemRequestTimeoutAt) then
+				if (cacheAllItems) then
+					print(MAJOR_VERSION .. ": timeout for item: " .. tostring(item))
+				end
                 self.failedItemRequests[item] = true
                 itemRequestTimeoutAt = nil
                 tremove(items, i)
@@ -632,6 +635,10 @@ function RangeCheck:initialOnUpdate()
             self:init(true)
             foundNewItems = nil
         end
+		if (cacheAllItems) then
+			print(MAJOR_VERSION .. ": finished cache")
+			cacheAllItems = nil
+		end
         self.frame:SetScript("OnUpdate", nil)
         self.frame:Hide()
 end
@@ -714,9 +721,11 @@ function RangeCheck:checkItems(itemList)
         for _, item in ipairs(items) do
             local name = GetItemInfo(item)
             if (not name) then
-                print(MAJOR_VERSION .. ": " .. tostring(item) .. ": " .. tostring(range) .. "yd: not in cache")
+                print(MAJOR_VERSION .. ": " .. tostring(item) .. ": " .. tostring(range) .. "yd: |cffeda500not in cache|r")
             else
-                print(MAJOR_VERSION .. ": " .. tostring(item) .. ": " .. tostring(name) .. ": " .. tostring(range) .. "yd: " .. tostring(IsItemInRange(item, "target")))
+				local res = IsItemInRange(item, "target") 
+				if (res == nil) then res = "|cffed0000nil|r" end
+                print(MAJOR_VERSION .. ": " .. tostring(item) .. ": " .. tostring(name) .. ": " .. tostring(range) .. "yd: " .. tostring(res))
             end
         end
     end
