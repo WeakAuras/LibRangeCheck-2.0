@@ -598,9 +598,9 @@ function RangeCheck:processItemRequests(itemRequests)
                 itemRequestTimeoutAt = GetTime() + ItemRequestTimeout
                 return true
             elseif (GetTime() > itemRequestTimeoutAt) then
-				if (cacheAllItems) then
-					print(MAJOR_VERSION .. ": timeout for item: " .. tostring(item))
-				end
+                if (cacheAllItems) then
+                    print(MAJOR_VERSION .. ": timeout for item: " .. tostring(item))
+                end
                 self.failedItemRequests[item] = true
                 itemRequestTimeoutAt = nil
                 tremove(items, i)
@@ -625,10 +625,10 @@ function RangeCheck:initialOnUpdate()
             self:init(true)
             foundNewItems = nil
         end
-		if (cacheAllItems) then
-			print(MAJOR_VERSION .. ": finished cache")
-			cacheAllItems = nil
-		end
+        if (cacheAllItems) then
+            print(MAJOR_VERSION .. ": finished cache")
+            cacheAllItems = nil
+        end
         self.frame:SetScript("OnUpdate", nil)
         self.frame:Hide()
 end
@@ -705,7 +705,7 @@ function RangeCheck:stopMeasurement()
     self.measurements = nil
 end
 
-function RangeCheck:checkItems(itemList)
+function RangeCheck:checkItems(itemList, verbose)
     if (not itemList) then return end
     for range, items in pairsByKeys(itemList) do
         for _, item in ipairs(items) do
@@ -713,9 +713,32 @@ function RangeCheck:checkItems(itemList)
             if (not name) then
                 print(MAJOR_VERSION .. ": " .. tostring(item) .. ": " .. tostring(range) .. "yd: |cffeda500not in cache|r")
             else
-				local res = IsItemInRange(item, "target") 
-				if (res == nil) then res = "|cffed0000nil|r" end
-                print(MAJOR_VERSION .. ": " .. tostring(item) .. ": " .. tostring(name) .. ": " .. tostring(range) .. "yd: " .. tostring(res))
+                local res = IsItemInRange(item, "target") 
+                if (res == nil or verbose) then
+                    if (res == nil) then res = "|cffed0000nil|r" end
+                    print(MAJOR_VERSION .. ": " .. tostring(item) .. ": " .. tostring(name) .. ": " .. tostring(range) .. "yd: " .. tostring(res))
+                end
+            end
+        end
+    end
+end
+
+function RangeCheck:checkSpells(spellList, verbose)
+    if (not spellList) then return end
+    for i, sid in ipairs(spellList) do
+        local name, _, _, _, _, _, _, minRange, range = GetSpellInfo(sid)
+        if ((not name) or (not range)) then
+            print(MAJOR_VERSION .. ": " .. tostring(sid) .. ": " .. tostring(range) .. "yd: |cffeda500invalid spell id|r")
+        else
+            local spellIdx = self:findSpellIndex(sid)
+            if (not spellIdx) then
+                print(MAJOR_VERSION .. ": " .. tostring(sid) .. ": " .. tostring(name) .. ": " .. tostring(minRange) .. "-" .. tostring(range) .. "yd: |cffeda500not in spellbook|r")
+            else
+                local res = IsSpellInRange(spellIdx, BOOKTYPE_SPELL, "target")
+                if (res == nil or verbose) then
+                    if (res == nil) then res = "|cffed0000nil|r" end
+                    print(MAJOR_VERSION .. ": " .. tostring(item) .. ": " .. tostring(name) .. ": " .. tostring(minRange) .. "-" .. tostring(range) .. "yd: " .. tostring(res))
+                end
             end
         end
     end
@@ -723,9 +746,30 @@ end
 
 function RangeCheck:checkAllItems()
     print(MAJOR_VERSION .. ": Checking FriendItems...")
-    self:checkItems(FriendItems)
+    self:checkItems(FriendItems, true)
     print(MAJOR_VERSION .. ": Checking HarmItems...")
-    self:checkItems(HarmItems)
+    self:checkItems(HarmItems, true)
+end
+
+function RangeCheck:checkAllCheckers()
+    if (not isTargetValid(unit)) then
+        print(MAJOR_VERSION .. ": Invalid unit, cannot check")
+        return
+    end
+    local _, playerClass = UnitClass("player")
+    if (UnitCanAttack("player", "target")) then
+        print(MAJOR_VERSION .. ": Checking HarmCheckers: ")
+        self:checkItems(HarmItems)
+        self:checkSpells(HarmSpells[playerClass])
+    elseif (UnitCanAssist("player", "target")) then
+        print(MAJOR_VERSION .. ": Checking FriendCheckers: ")
+        self:checkItems(FriendItems)
+        self:checkSpells(FriendSpells[playerClass])
+    else
+        print(MAJOR_VERSION .. ": Misc unit, cannot check")
+        return
+    end
+    print(MAJOR_VERSION .. ": done.")
 end
 
 local GetPlayerMapPosition = GetPlayerMapPosition
