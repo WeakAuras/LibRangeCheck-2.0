@@ -372,7 +372,6 @@ end
 
 local function createCheckerList(spellList, interactList, itemList)
     local res = {}
-    local ranges = {}
     if (spellList) then
         for i, sid in ipairs(spellList) do
             local name, _, _, _, _, _, _, minRange, range = GetSpellInfo(sid)
@@ -384,27 +383,21 @@ local function createCheckerList(spellList, interactList, itemList)
                 if (range == 0) then
                     range = MeleeRange
                 end
-                if (not ranges[range]) then
-                    ranges[range] = true
-                    addChecker(res, range, minRange, function(unit)
-                        if (IsSpellInRange(spellIdx, BOOKTYPE_SPELL, unit) == 1) then return true end
-                    end)
-                end
+                addChecker(res, range, minRange, function(unit)
+                    if (IsSpellInRange(spellIdx, BOOKTYPE_SPELL, unit) == 1) then return true end
+                end)
             end
         end
     end
     
     if (itemList) then
         for range, items in pairs(itemList) do
-            if ((not ranges[range]) and next(items)) then
-                for i, item in ipairs(items) do
-                    if (GetItemInfo(item)) then
-                        ranges[range] = true
-                        addChecker(res, range, nil, function(unit)
-                            if (IsItemInRange(item, unit) == 1) then return true end
-                        end)
-                        break
-                    end
+            for i, item in ipairs(items) do
+                if (GetItemInfo(item)) then
+                    addChecker(res, range, nil, function(unit)
+                        if (IsItemInRange(item, unit) == 1) then return true end
+                    end)
+                    break
                 end
             end
         end
@@ -412,12 +405,9 @@ local function createCheckerList(spellList, interactList, itemList)
     
     if (not interactList) then interactList = DefaultInteractList end
     for index, range in pairs(interactList) do
-        if (not ranges[range]) then
-            ranges[range] = true
-            addChecker(res, range, nil, function(unit)
-                if (CheckInteractDistance(unit, index)) then return true end
-            end)
-        end
+        addChecker(res, range, nil, function(unit)
+            if (CheckInteractDistance(unit, index)) then return true end
+        end)
     end
 
     return res
