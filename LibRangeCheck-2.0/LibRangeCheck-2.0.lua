@@ -121,7 +121,9 @@ FriendSpells["SHAMAN"] = {
 HarmSpells["SHAMAN"] = {
     403, -- ["Lightning Bolt"], -- 30 (Storm Reach: 33, 36)
     370, -- ["Purge"], -- 30
-    8042, -- ["Earth Shock"], -- 20 (Gladiator Gloves: +5)
+	8050, -- ["Flame Shock"], -- 30 (Lava Flows: 25, 30, 35; Gladiator Gloves: +5)
+    8042, -- ["Earth Shock"], -- 20 (Storm, Earth and Fire: 21-25; Gladiator Gloves: +5)
+	8056, -- ["Frost Shock"], -- 20 (Gladiator Gloves: +5)
 }
 
 FriendSpells["WARRIOR"] = {}
@@ -752,7 +754,7 @@ function RangeCheck:checkAllItems()
 end
 
 function RangeCheck:checkAllCheckers()
-    if (not isTargetValid(unit)) then
+    if (not isTargetValid("target")) then
         print(MAJOR_VERSION .. ": Invalid unit, cannot check")
         return
     end
