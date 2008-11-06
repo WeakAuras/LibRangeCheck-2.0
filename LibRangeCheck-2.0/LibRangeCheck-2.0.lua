@@ -72,13 +72,15 @@ HarmSpells["HUNTER"] = {
 }
 
 FriendSpells["MAGE"] = {
-    475, -- ["Remove Curse"], -- 40
-    1459, -- ["Arcane Intellect"], -- 30
+    475, -- ["Remove Curse"], -- 40 (Magic Attunement: 43, 46)
+    1459, -- ["Arcane Intellect"], -- 30 (Magic Attunement: 33, 36)
 }
 HarmSpells["MAGE"] = {
     133, -- ["Fireball"], -- 35 (Flame Throwing: 38, 41)
     116, -- ["Frostbolt"], -- 30 (Arctic Reach: 33, 36)
-    5143, -- ["Arcane Missiles"], -- 30 (Magic Attunement: 33, 36)
+    30455, -- ["Ice Lance"], -- 30 (Arctic Reach: 33, 36, Glyph of Ice Lance: +5)
+    5143, -- ["Arcane Missiles"], -- 30 (Magic Attunement: 33, 36; Glyph of Arcane Missiles: +5)
+    30451, -- ["Arcane Blast"], -- 30 (Magic Attunement: 33, 36)
     2948, -- ["Scorch"], -- 30 (Flame Throwing: 33, 36)
     5019, -- ["Shoot"], -- 30
     2136, -- ["Fire Blast"], -- 20 (Flame Throwing: 23, 26; Gladiator Gloves: +5)
@@ -90,7 +92,7 @@ FriendSpells["PALADIN"] = {
     20473, -- ["Holy Shock"], -- 20
 }
 HarmSpells["PALADIN"] = {
-    24275, -- ["Hammer of Wrath"],  -- 30
+    24275, -- ["Hammer of Wrath"],  -- 30 (Glyph of Hammer of Wrath: +5)
     20473, -- ["Holy Shock"], -- 20
     20271, -- ["Judgement"], -- 10
     35395, -- ["Crusader Strike"], -- 5
@@ -104,12 +106,13 @@ HarmSpells["PRIEST"] = {
     585, -- ["Smite"], -- 30 (Holy Reach: 33, 36)
     589, -- ["Shadow Word: Pain"], -- 30 (Shadow Reach: 33, 36)
     5019, -- ["Shoot"], -- 30
-    15407, -- ["Mind Flay"], -- 20 (Shadow Reach: 22, 24)
+    15407, -- ["Mind Flay"], -- 20 (Shadow Reach: 22, 24, Glyph of Mind Flay: +10)
 }
 
 FriendSpells["ROGUE"] = {}
 HarmSpells["ROGUE"] = {
     2764, -- ["Throw"], -- 30
+    26679, -- ["Deadly Throw"], -- 30 (Glyph of Deadly Throw: +5)
     2094, -- ["Blind"], -- 10 (Dirty Tricks: 12, 15)
     2098, -- ["Eviscerate"], -- 5
 }
@@ -128,8 +131,8 @@ HarmSpells["SHAMAN"] = {
 
 FriendSpells["WARRIOR"] = {}
 HarmSpells["WARRIOR"] = {
-    100, -- ["Charge"], -- 8-25
-    3018, -- ["Shoot"], -- 8-30
+    100, -- ["Charge"], -- 8-25 (Glyph of Charge: +5)
+    3018, -- ["Shoot"], -- 30
     2764, -- ["Throw"], -- 30
     355, -- ["Taunt"], -- 20
     5246, -- ["Intimidating Shout"], -- 10
@@ -143,6 +146,7 @@ HarmSpells["WARLOCK"] = {
     5019, -- ["Shoot"], -- 30
     348, -- ["Immolate"], -- 30 (Destructive Reach: 33, 36)
     172, -- ["Corruption"], -- 30 (Grim Reach: 33, 36)
+    18223, -- ["Curse of Exhaustion"], -- 30 (Grim Reach: 33, 36, Glyph of Curse of Exhaustion: +5)
     5782, -- ["Fear"], -- 20 (Grim Reach: 22, 24)
     17877, -- ["Shadowburn"], -- 20 (Destructive Reach: 22, 24)
 }
@@ -151,6 +155,7 @@ FriendSpells["DEATHKNIGHT"] = {
 }
 HarmSpells["DEATHKNIGHT"] = {
     47541, -- ["Death Coil"], -- 30
+    47476, -- ["Strangulate"], -- 30 (Glyph of Strangulate: +20)
     45477, -- ["Icy Touch"], -- 20 (Icy Reach: 25, 30)
     56222, -- ["Dark Command"], -- 20
     50842, -- ["Pestilence"], -- 5
@@ -570,6 +575,18 @@ function RangeCheck:CHARACTER_POINTS_CHANGED()
     self:init(true)
 end
 
+function RangeCheck:GLYPH_ADDED()
+    self:init(true)
+end
+
+function RangeCheck:GLYPH_REMOVED()
+    self:init(true)
+end
+
+function RangeCheck:GLYPH_UPDATED()
+    self:init(true)
+end
+
 function RangeCheck:UNIT_INVENTORY_CHANGED(event, unit)
     if (self.initialized and unit == "player" and self.handSlotItem ~= GetInventoryItemLink("player", HandSlotId)) then
         self:init(true)
@@ -823,6 +840,9 @@ function RangeCheck:activate()
         self.frame = frame
         frame:RegisterEvent("LEARNED_SPELL_IN_TAB")
         frame:RegisterEvent("CHARACTER_POINTS_CHANGED")
+        frame:RegisterEvent("GLYPH_ADDED")
+        frame:RegisterEvent("GLYPH_REMOVED")
+        frame:RegisterEvent("GLYPH_UPDATED")
         local _, playerClass = UnitClass("player")
         if (playerClass == "MAGE" or playerClass == "SHAMAN") then
             -- Mage and Shaman gladiator gloves modify spell ranges
