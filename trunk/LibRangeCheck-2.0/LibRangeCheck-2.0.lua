@@ -57,7 +57,7 @@ FriendSpells["DRUID"] = {
 HarmSpells["DRUID"] = {
     16979, -- ["Feral Charge"], -- 8-25
     5176, -- ["Wrath"], -- 30 (Nature's Reach: 33, 36)
-    33786, -- ["Cyclone"], -- 20 (Nature's Reach: 22, 24)
+    33786, -- ["Cyclone"], -- 20 (Nature's Reach: 22, 24; Gale Winds: +10/20%)
     6795, -- ["Growl"], -- 20
     6807, -- ["Maul"], -- 5
 }
@@ -379,6 +379,8 @@ local function createCheckerList(spellList, interactList, itemList)
             local name, _, _, _, _, _, _, minRange, range = GetSpellInfo(sid)
             local spellIdx = findSpellIdx(name)
             if (spellIdx and range) then
+                minRange = math.floor(minRange + 0.5)
+                range = math.floor(range + 0.5)
                 if (minRange == 0) then -- getRange() expects minRange to be nil in this case
                     minRange = nil
                 end
