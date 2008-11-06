@@ -124,9 +124,9 @@ FriendSpells["SHAMAN"] = {
 HarmSpells["SHAMAN"] = {
     403, -- ["Lightning Bolt"], -- 30 (Storm Reach: 33, 36)
     370, -- ["Purge"], -- 30
-	8050, -- ["Flame Shock"], -- 30 (Lava Flows: 25, 30, 35; Gladiator Gloves: +5)
+    8050, -- ["Flame Shock"], -- 30 (Lava Flows: 25, 30, 35; Gladiator Gloves: +5)
     8042, -- ["Earth Shock"], -- 20 (Storm, Earth and Fire: 21-25; Gladiator Gloves: +5)
-	8056, -- ["Frost Shock"], -- 20 (Gladiator Gloves: +5)
+    8056, -- ["Frost Shock"], -- 20 (Gladiator Gloves: +5)
 }
 
 FriendSpells["WARRIOR"] = {}
@@ -313,12 +313,6 @@ local harmItemRequests
 
 -- helper functions
 
-local function print(text)
-    if (DEFAULT_CHAT_FRAME) then 
-        DEFAULT_CHAT_FRAME:AddMessage(text)
-    end
-end
-
 local function copyTable(src, dst)
     if (type(dst) ~= "table") then dst = {} end
     if (type(src) == "table") then
@@ -386,6 +380,7 @@ local function createCheckerList(spellList, interactList, itemList)
             if (spellIdx and range) then
                 minRange = math.floor(minRange + 0.5)
                 range = math.floor(range + 0.5)
+                -- print("### spell: " .. tostring(name) .. ", " .. tostring(minRange) .. " - " ..  tostring(range))
                 if (minRange == 0) then -- getRange() expects minRange to be nil in this case
                     minRange = nil
                 end
@@ -562,6 +557,7 @@ end
 -- >> Public API
 
 function RangeCheck:OnEvent(event, ...)
+    -- print("### Event: " .. tostring(event))
     if (type(self[event]) == 'function') then
         self[event](self, event, ...)
     end
