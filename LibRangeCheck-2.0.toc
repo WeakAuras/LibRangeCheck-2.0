@@ -3,6 +3,7 @@
 ## Notes: A library to determine estimated range.
 ## Author: mitch0
 ## Version: 3.1-beta3
+## LoadOnDemand: 1
 ## X-Category: Library
 ## X-AceLibrary-LibRangeCheck-2.0: true
 ## X-License: Public Domain
