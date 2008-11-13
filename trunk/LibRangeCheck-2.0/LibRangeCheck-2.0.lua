@@ -170,7 +170,7 @@ FriendItems  = {
     },
     [8] = {
         34368, -- Attuned Crystal Cores
---WOTLK        33278, -- Burning Torch
+        33278, -- Burning Torch
     },
     [10] = {
         32321, -- Sparrowhawk Net
@@ -190,8 +190,8 @@ FriendItems  = {
         21991, -- Heavy Netherweave Bandage
         34721, -- Frostweave Bandage
         34722, -- Heavy Frostweave Bandage
---WOTLK        38643, -- Thick Frostweave Bandage
---WOTLK        38640, -- Dense Frostweave Bandage
+        38643, -- Thick Frostweave Bandage
+        38640, -- Dense Frostweave Bandage
     },
     [20] = {
         21519, -- Mistletoe
@@ -219,10 +219,10 @@ FriendItems  = {
     },
     [60] = {
         32825, -- Soul Cannon
---WOTLK        37887, -- Seeds of Nature's Wrath
+        37887, -- Seeds of Nature's Wrath
     },
     [80] = {
---WOTLK        35278, -- Reinforced Net
+        35278, -- Reinforced Net
     },
 }
 
@@ -232,7 +232,7 @@ HarmItems = {
     },
     [8] = {
         34368, -- Attuned Crystal Cores
---WOTLK        33278, -- Burning Torch
+        33278, -- Burning Torch
     },
     [10] = {
         32321, -- Sparrowhawk Net
@@ -265,10 +265,10 @@ HarmItems = {
     },
     [60] = {
         32825, -- Soul Cannon
---WOTLK        37887, -- Seeds of Nature's Wrath
+        37887, -- Seeds of Nature's Wrath
     },
     [80] = {
---WOTLK        35278, -- Reinforced Net
+        35278, -- Reinforced Net
     },
 }
 
