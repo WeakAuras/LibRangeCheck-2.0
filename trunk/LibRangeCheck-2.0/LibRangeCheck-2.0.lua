@@ -64,6 +64,7 @@ HarmSpells["DRUID"] = {
 
 FriendSpells["HUNTER"] = {}
 HarmSpells["HUNTER"] = {
+    1130, -- ["Hunter's Mark"] -- 100
     53351, -- ["Kill Shot"] -- 5-45 (Hawk Eye: 47, 49, 51)
     75, -- ["Auto Shot"], -- 5-35 (Hawk Eye: 37, 39, 41)
     2764, -- ["Throw"], -- 30
@@ -295,7 +296,6 @@ local tonumber = tonumber
 local CheckInteractDistance = CheckInteractDistance
 local IsSpellInRange = IsSpellInRange
 local IsItemInRange = IsItemInRange
-local UnitIsVisible = UnitIsVisible
 local tinsert = tinsert
 local tremove = tremove
 local GetInventoryItemLink = GetInventoryItemLink
@@ -418,15 +418,8 @@ local function createCheckerList(spellList, interactList, itemList)
 end
 
 -- returns minRange, maxRange  or nil
-local function getRange(unit, checkerList, checkVisible)
+local function getRange(unit, checkerList)
     local min, max = 0, nil
-    if (checkVisible) then
-        if (UnitIsVisible(unit)) then
-            max = VisibleRange
-        else
-            return VisibleRange, nil
-        end
-    end
     for i, rc in ipairs(checkerList) do
         if (not max or max > rc.range) then
             if (rc.checker(unit)) then
@@ -473,20 +466,22 @@ function RangeCheck:findSpellIndex(spell)
 end
 
 -- returns minRange, maxRange or nil
-function RangeCheck:getRange(unit, checkVisible)
+function RangeCheck:getRange(unit)
     if (not isTargetValid(unit)) then return nil end
     if (UnitCanAttack("player", unit)) then
-        return getRange(unit, self.harmRC, checkVisible)
+        return getRange(unit, self.harmRC)
     elseif (UnitCanAssist("player", unit)) then
-        return getRange(unit, self.friendRC, checkVisible)
+        return getRange(unit, self.friendRC)
     else
-        return getRange(unit, self.miscRC, checkVisible)
+        return getRange(unit, self.miscRC)
     end
 end
 
 -- returns the range estimate as a string
+-- deprecated, use :getRange(unit) instead and build your own strings
+-- (checkVisible is not used any more, kept for compatibility only)
 function RangeCheck:getRangeAsString(unit, checkVisible, showOutOfRange)
-    local minRange, maxRange = self:getRange(unit, checkVisible)
+    local minRange, maxRange = self:getRange(unit)
     if (not minRange) then return nil end
     if (not maxRange) then
         return showOutOfRange and minRange .. " +" or nil
