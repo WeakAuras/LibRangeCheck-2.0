@@ -296,6 +296,7 @@ local tonumber = tonumber
 local CheckInteractDistance = CheckInteractDistance
 local IsSpellInRange = IsSpellInRange
 local IsItemInRange = IsItemInRange
+local ipairs = ipairs
 local tinsert = tinsert
 local tremove = tremove
 local GetInventoryItemLink = GetInventoryItemLink
@@ -420,7 +421,8 @@ end
 -- returns minRange, maxRange  or nil
 local function getRange(unit, checkerList)
     local min, max = 0, nil
-    for i, rc in ipairs(checkerList) do
+    for i = 1, #checkerList do
+        local rc = checkerList[i]
         if (not max or max > rc.range) then
             if (rc.checker(unit)) then
                 max = rc.range
