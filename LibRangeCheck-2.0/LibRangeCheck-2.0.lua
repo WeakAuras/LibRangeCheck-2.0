@@ -59,7 +59,7 @@ HarmSpells["DRUID"] = {
     5176, -- ["Wrath"], -- 30 (Nature's Reach: 33, 36)
     33786, -- ["Cyclone"], -- 20 (Nature's Reach: 22, 24; Gale Winds: +10/20%)
     6795, -- ["Growl"], -- 20
-    6807, -- ["Maul"], -- 5
+    5211, -- [Bash], -- 5
 }
 
 FriendSpells["HUNTER"] = {}
