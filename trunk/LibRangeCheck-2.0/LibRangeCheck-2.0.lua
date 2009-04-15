@@ -68,7 +68,7 @@ HarmSpells["HUNTER"] = {
     53351, -- ["Kill Shot"] -- 5-45 (Hawk Eye: 47, 49, 51)
     75, -- ["Auto Shot"], -- 5-35 (Hawk Eye: 37, 39, 41)
     2764, -- ["Throw"], -- 30
-    19503, -- ["Scatter Shot"], -- 15 (Hawk Eye: 17, 19, 21)
+    19503, -- ["Scatter Shot"], -- 15 (Hawk Eye: 17, 19, 21; Glyph of Scatter Shot: +3)
     2974, -- ["Wing Clip"], -- 5
 }
 
@@ -125,8 +125,8 @@ FriendSpells["SHAMAN"] = {
 HarmSpells["SHAMAN"] = {
     403, -- ["Lightning Bolt"], -- 30 (Storm Reach: 33, 36)
     370, -- ["Purge"], -- 30
-    8050, -- ["Flame Shock"], -- 30 (Lava Flows: 25, 30, 35; Gladiator Gloves: +5)
-    8042, -- ["Earth Shock"], -- 20 (Storm, Earth and Fire: 21-25; Gladiator Gloves: +5)
+    8050, -- ["Flame Shock"], -- 20 (Elemental Reach: 27, 35; Gladiator Gloves: +5)
+--    8042, -- ["Earth Shock"], -- 20 (Storm, Earth and Fire: 21-25; Gladiator Gloves: +5)
     8056, -- ["Frost Shock"], -- 20 (Gladiator Gloves: +5)
 }
 
@@ -568,6 +568,10 @@ function RangeCheck:CHARACTER_POINTS_CHANGED()
     self:init(true)
 end
 
+function RangeCheck:PLAYER_TALENT_UPDATE()
+    self:init(true)
+end
+
 function RangeCheck:GLYPH_ADDED()
     self:init(true)
 end
@@ -833,6 +837,7 @@ function RangeCheck:activate()
         self.frame = frame
         frame:RegisterEvent("LEARNED_SPELL_IN_TAB")
         frame:RegisterEvent("CHARACTER_POINTS_CHANGED")
+        frame:RegisterEvent("PLAYER_TALENT_UPDATE")
         frame:RegisterEvent("GLYPH_ADDED")
         frame:RegisterEvent("GLYPH_REMOVED")
         frame:RegisterEvent("GLYPH_UPDATED")
