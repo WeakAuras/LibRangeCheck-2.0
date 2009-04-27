@@ -135,8 +135,8 @@ HarmSpells["WARRIOR"] = {
     100, -- ["Charge"], -- 8-25 (Glyph of Charge: +5)
     3018, -- ["Shoot"], -- 30
     2764, -- ["Throw"], -- 30
-    355, -- ["Taunt"], -- 20
-    5246, -- ["Intimidating Shout"], -- 10
+    355, -- ["Taunt"], -- 30
+    5246, -- ["Intimidating Shout"], -- 8
     772, -- ["Rend"], -- 5
 }
 
