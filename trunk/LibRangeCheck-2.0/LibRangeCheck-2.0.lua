@@ -372,7 +372,7 @@ local function addChecker(t, range, minRange, checker)
     tinsert(t, rc)
 end
 
-local function createCheckerList(spellList, interactList, itemList)
+local function createCheckerList(spellList, itemList, interactList)
     local res = {}
     if (spellList) then
         for i, sid in ipairs(spellList) do
@@ -408,11 +408,12 @@ local function createCheckerList(spellList, interactList, itemList)
         end
     end
     
-    if (not interactList) then interactList = DefaultInteractList end
-    for index, range in pairs(interactList) do
-        addChecker(res, range, nil, function(unit)
-            if (CheckInteractDistance(unit, index)) then return true end
-        end)
+    if (interactList) then
+        for index, range in pairs(interactList) do
+            addChecker(res, range, nil, function(unit)
+                if (CheckInteractDistance(unit, index)) then return true end
+            end)
+        end
     end
 
     return res
@@ -447,7 +448,7 @@ end
 -- someone manages to call us before we're properly initialized. miscRC should be independent of
 -- race/class/talents, so it's safe to initialize it here
 -- friendRC and harmRC will be properly initialized later when we have all the necessary data for them
-RangeCheck.miscRC = createCheckerList()
+RangeCheck.miscRC = createCheckerList(nil, nil, DefaultInteractList)
 RangeCheck.friendRC = RangeCheck.miscRC
 RangeCheck.harmRC = RangeCheck.miscRC
 
@@ -545,9 +546,9 @@ function RangeCheck:init(forced)
     end
 
     local interactList = InteractLists[playerRace]
-    self.friendRC = createCheckerList(FriendSpells[playerClass], interactList, FriendItems)
-    self.harmRC = createCheckerList(HarmSpells[playerClass], interactList, HarmItems)
-    self.miscRC = createCheckerList(nil, interactList, nil)
+    self.friendRC = createCheckerList(FriendSpells[playerClass], FriendItems)
+    self.harmRC = createCheckerList(HarmSpells[playerClass], HarmItems)
+    self.miscRC = createCheckerList(nil, nil, interactList)
     self.handSlotItem = GetInventoryItemLink("player", HandSlotId)
 end
 
