@@ -408,7 +408,7 @@ local function createCheckerList(spellList, itemList, interactList)
         end
     end
     
-    if (interactList) then
+    if (interactList and not next(res)) then
         for index, range in pairs(interactList) do
             addChecker(res, range, nil, function(unit)
                 if (CheckInteractDistance(unit, index)) then return true end
@@ -545,9 +545,9 @@ function RangeCheck:init(forced)
         end
     end
 
-    local interactList = InteractLists[playerRace]
-    self.friendRC = createCheckerList(FriendSpells[playerClass], FriendItems)
-    self.harmRC = createCheckerList(HarmSpells[playerClass], HarmItems)
+    local interactList = InteractLists[playerRace] or DefaultInteractList
+    self.friendRC = createCheckerList(FriendSpells[playerClass], FriendItems, interactList)
+    self.harmRC = createCheckerList(HarmSpells[playerClass], HarmItems, interactList)
     self.miscRC = createCheckerList(nil, nil, interactList)
     self.handSlotItem = GetInventoryItemLink("player", HandSlotId)
 end
