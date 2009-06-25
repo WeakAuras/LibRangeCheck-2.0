@@ -77,6 +77,7 @@ FriendSpells["MAGE"] = {
     1459, -- ["Arcane Intellect"], -- 30 (Magic Attunement: 33, 36)
 }
 HarmSpells["MAGE"] = {
+    44614, -- ["Frostfire Bolt"], -- 40
     133, -- ["Fireball"], -- 35 (Flame Throwing: 38, 41)
     116, -- ["Frostbolt"], -- 30 (Arctic Reach: 33, 36)
     30455, -- ["Ice Lance"], -- 30 (Arctic Reach: 33, 36, Glyph of Ice Lance: +5)
