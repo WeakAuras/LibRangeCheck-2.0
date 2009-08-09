@@ -1,8 +1,8 @@
-## Interface: 30100
+## Interface: 30200
 ## Title: Lib: RangeCheck-2.0
 ## Notes: A library to determine estimated range.
 ## Author: mitch0
-## Version: 3.4
+## Version: 3.4.1
 ## LoadOnDemand: 1
 ## X-Category: Library
 ## X-AceLibrary-LibRangeCheck-2.0: true
