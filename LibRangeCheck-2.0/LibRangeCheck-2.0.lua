@@ -192,8 +192,8 @@ FriendItems  = {
         21991, -- Heavy Netherweave Bandage
         34721, -- Frostweave Bandage
         34722, -- Heavy Frostweave Bandage
-        38643, -- Thick Frostweave Bandage
-        38640, -- Dense Frostweave Bandage
+--        38643, -- Thick Frostweave Bandage
+--        38640, -- Dense Frostweave Bandage
     },
     [20] = {
         21519, -- Mistletoe
