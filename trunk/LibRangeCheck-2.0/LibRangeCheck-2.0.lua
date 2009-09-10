@@ -166,7 +166,7 @@ HarmSpells["DEATHKNIGHT"] = {
 
 -- Items [Special thanks to Maldivia for the nice list]
 
-FriendItems  = {
+local FriendItems  = {
     [5] = {
         37727, -- Ruby Acorn
     },
@@ -228,7 +228,7 @@ FriendItems  = {
     },
 }
 
-HarmItems = {
+local HarmItems = {
     [5] = {
         37727, -- Ruby Acorn
     },
@@ -286,20 +286,28 @@ end
 
 -- cache
 
+local tonumber = tonumber
+local ipairs = ipairs
+local pairs = pairs
+local tostring = tostring
+local print = print
+local next = next
+local type = type
+local tinsert = tinsert
+local tremove = tremove
 local BOOKTYPE_SPELL = BOOKTYPE_SPELL
 local GetSpellInfo = GetSpellInfo
+local GetSpellName = GetSpellName
 local GetItemInfo = GetItemInfo
 local UnitCanAttack = UnitCanAttack
 local UnitCanAssist = UnitCanAssist
 local UnitExists = UnitExists
 local UnitIsDeadOrGhost = UnitIsDeadOrGhost
-local tonumber = tonumber
 local CheckInteractDistance = CheckInteractDistance
 local IsSpellInRange = IsSpellInRange
 local IsItemInRange = IsItemInRange
-local ipairs = ipairs
-local tinsert = tinsert
-local tremove = tremove
+local UnitClass = UnitClass
+local UnitRace = UnitRace
 local GetInventoryItemLink = GetInventoryItemLink
 local GetTime = GetTime
 local HandSlotId = GetInventorySlotInfo("HandsSlot")
@@ -757,7 +765,7 @@ function RangeCheck:checkSpells(spellList, verbose)
                 local res = IsSpellInRange(spellIdx, BOOKTYPE_SPELL, "target")
                 if (res == nil or verbose) then
                     if (res == nil) then res = "|cffed0000nil|r" end
-                    print(MAJOR_VERSION .. ": " .. tostring(item) .. ": " .. tostring(name) .. ": " .. tostring(minRange) .. "-" .. tostring(range) .. "yd: " .. tostring(res))
+                    print(MAJOR_VERSION .. ": " .. tostring(sid) .. ": " .. tostring(name) .. ": " .. tostring(minRange) .. "-" .. tostring(range) .. "yd: " .. tostring(res))
                 end
             end
         end
