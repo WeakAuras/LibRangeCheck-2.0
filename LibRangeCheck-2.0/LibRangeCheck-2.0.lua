@@ -545,7 +545,7 @@ function RangeCheck:init(forced)
     end
     if not minRangeCheck then
         -- fall back to interact distance checks
-        if  (playerClass == "HUNTER" or playerRace == "Tauren" then
+        if playerClass == "HUNTER" or playerRace == "Tauren" then
             -- for hunters, use interact4 as it's safer
             -- for Taurens interact4 is actually closer than 25yd and interact2 is closer than 8yd, so we can't use that
             minRangeCheck = function(unit) return CheckInteractDistance(unit, 4) end
