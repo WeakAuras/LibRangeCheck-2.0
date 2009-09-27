@@ -11,8 +11,8 @@ License: Public Domain
 local MAJOR_VERSION = "LibRangeCheck-2.0"
 local MINOR_VERSION = tonumber(("$Revision$"):match("%d+")) + 100000
 
-local RangeCheck = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
-if not RangeCheck then
+local lib = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
+if not lib then
     return
 end
 
@@ -42,7 +42,6 @@ local InteractLists = {
 }
 
 local MeleeRange = 5
-local VisibleRange = 100
 
 -- list of friendly spells that have different ranges
 local FriendSpells = {}
@@ -321,6 +320,10 @@ local cacheAllItems
 local friendItemRequests
 local harmItemRequests
 
+local checkerCache_Spell = {}
+local checkerCache_SpellWithMinRange = {}
+local checkerCache_Item = {}
+
 -- helper functions
 
 local function copyTable(src, dst)
@@ -397,9 +400,26 @@ local function createCheckerList(spellList, itemList, interactList)
                 if range == 0 then
                     range = MeleeRange
                 end
-                addChecker(res, range, minRange, function(unit)
-                    if IsSpellInRange(spellIdx, BOOKTYPE_SPELL, unit) == 1 then return true end
-                end)
+                local func = checkerCache_Spell[sid] 
+                if not func then
+                    if minRange then
+                        func = function(unit)
+                            if IsSpellInRange(spellIdx, BOOKTYPE_SPELL, unit) == 1 then
+                                return true
+                            elseif minRangeCheck(unit) then
+                                return true, true
+                            end
+                        end
+                    else
+                        func = function(unit)
+                            if IsSpellInRange(spellIdx, BOOKTYPE_SPELL, unit) == 1 then
+                                 return true
+                            end
+                        end
+                    end
+                    checkerCache_Spell[sid] = func
+                end
+                addChecker(res, range, minRange, func)
             end
         end
     end
@@ -408,9 +428,16 @@ local function createCheckerList(spellList, itemList, interactList)
         for range, items in pairs(itemList) do
             for i, item in ipairs(items) do
                 if GetItemInfo(item) then
-                    addChecker(res, range, nil, function(unit)
-                        if IsItemInRange(item, unit) == 1 then return true end
-                    end)
+                    local func = checkerCache_Item[item]
+                    if not func then
+                        func = function(unit)
+                            if IsItemInRange(item, unit) == 1 then
+                                 return true
+                            end
+                        end
+                        checkerCache_Item[item] = func
+                    end
+                    addChecker(res, range, nil, func)
                     break
                 end
             end
@@ -434,13 +461,19 @@ local function getRange(unit, checkerList)
     for i = 1, #checkerList do
         local rc = checkerList[i]
         if not max or max > rc.range then
-            if rc.checker(unit) then
-                max = rc.range
-                if rc.minRange then
-                    min = rc.minRange
+            if rc.minRange then
+                local inRange, inMinRange = rc.checker(unit)
+                if inMinRange then
+                    max = rc.minRange
+                elseif inRange then
+                    min, max = rc.minRange, rc.range
+                elseif min > rc.range then
+                    return min, max
+                else
+                    return rc.range, max
                 end
-            elseif rc.minRange and minRangeCheck(unit) then
-                max = rc.minRange
+            elseif rc.checker(unit) then
+                max = rc.range
             elseif min > rc.range then
                 return min, max
             else
@@ -451,25 +484,70 @@ local function getRange(unit, checkerList)
     return min, max
 end
 
+local function updateRanges(byRangeTable, checkerList)
+    local start = 0
+    for range, checker in pairs(byRangeTable) do
+        if range > start then
+            start = range
+        end
+    end
+    local changed = false
+    for _, rc in ipairs(checkerList) do
+        for i = start, rc.range + 1, -1 do
+            if byRangeTable[i] then
+                changed = true
+                byRangeTable[i] = nil
+            end
+        end
+        if byRangeTable[rc.range] ~= rc.checker then
+            changed = true
+            byRangeTable[rc.range] = rc.checker
+        end
+        start = rc.range - 1
+    end
+    for i = start, 1, -1 do
+        if byRangeTable[i] then
+            changed = true
+            byRangeTable[i] = nil
+        end
+    end
+    return changed
+end
+
 -- OK, here comes the actual lib
 
 -- pre-initialize the checkerLists here so that we can return some meaningful result even if
 -- someone manages to call us before we're properly initialized. miscRC should be independent of
 -- race/class/talents, so it's safe to initialize it here
 -- friendRC and harmRC will be properly initialized later when we have all the necessary data for them
-RangeCheck.miscRC = createCheckerList(nil, nil, DefaultInteractList)
-RangeCheck.friendRC = RangeCheck.miscRC
-RangeCheck.harmRC = RangeCheck.miscRC
+lib.checkerCache_Spell = lib.checkerCache_Spell or {}
+lib.checkerCache_Item = lib.checkerCache_Item or {}
+lib.miscRC = createCheckerList(nil, nil, DefaultInteractList)
+lib.friendRC = lib.miscRC
+lib.harmRC = lib.miscRC
 
-RangeCheck.failedItemRequests = {}
+lib.friendRCByRange = {}
+lib.harmRCByRange = {}
+
+lib.failedItemRequests = {}
 
 -- << Public API
 
--- "export" it, maybe someone will need it for formatting
-RangeCheck.MeleeRange = MeleeRange
-RangeCheck.VisibleRange = VisibleRange
+--@do-not-package@
+-- this is here just for .docmeta
+--- A checker function
+-- @param unit the unit to check range to
+-- @return true if the unit is within the range for this checker
+local function checker(unit)
+end
 
-function RangeCheck:findSpellIndex(spell)
+--@end-do-not-package@ 
+
+lib.CHECKERS_CHANGED = "CHECKERS_CHANGED"
+-- "export" it, maybe someone will need it for formatting
+lib.MeleeRange = MeleeRange
+
+function lib:findSpellIndex(spell)
     if type(spell) == 'number' then
         spell = GetSpellInfo(spell)
     end
@@ -477,22 +555,10 @@ function RangeCheck:findSpellIndex(spell)
     return findSpellIdx(spell)
 end
 
--- returns minRange, maxRange or nil
-function RangeCheck:getRange(unit)
-    if not isTargetValid(unit) then return nil end
-    if UnitCanAttack("player", unit) then
-        return getRange(unit, self.harmRC)
-    elseif UnitCanAssist("player", unit) then
-        return getRange(unit, self.friendRC)
-    else
-        return getRange(unit, self.miscRC)
-    end
-end
-
 -- returns the range estimate as a string
 -- deprecated, use :getRange(unit) instead and build your own strings
 -- (checkVisible is not used any more, kept for compatibility only)
-function RangeCheck:getRangeAsString(unit, checkVisible, showOutOfRange)
+function lib:getRangeAsString(unit, checkVisible, showOutOfRange)
     local minRange, maxRange = self:getRange(unit)
     if not minRange then return nil end
     if not maxRange then
@@ -502,7 +568,7 @@ function RangeCheck:getRangeAsString(unit, checkVisible, showOutOfRange)
 end
 
 -- initialize RangeCheck if not yet initialized or if "forced"
-function RangeCheck:init(forced)
+function lib:init(forced)
     if self.initialized and (not forced) then return end
     self.initialized = true
     local _, playerClass = UnitClass("player")
@@ -559,48 +625,161 @@ function RangeCheck:init(forced)
     self.harmRC = createCheckerList(HarmSpells[playerClass], HarmItems, interactList)
     self.miscRC = createCheckerList(nil, nil, interactList)
     self.handSlotItem = GetInventoryItemLink("player", HandSlotId)
+    local changed = false
+    if updateRanges(self.friendRCByRange, self.friendRC) then
+        changed = true
+    end
+    if updateRanges(self.harmRCByRange, self.harmRC) then
+        changed = true
+    end
+    if changed and self.callbacks then
+        self.callbacks:Fire(self.CHECKERS_CHANGED)
+    end
 end
+
+function lib:GetFriendCheckers()
+    return pairs(self.friendRCByRange)
+end
+
+function lib:GetHarmCheckers()
+    return pairs(self.harmRCByRange)
+end
+
+function lib:GetFriendMinChecker(range, exactMatch)
+    local checker = self.friendRCByRange[range]
+    if checker or exactMatch then
+        return checker
+    end
+    local maxChecker = self.friendRC[1]
+    if not maxChecker or range > maxChecker.range then
+        return nil
+    end
+    repeat
+        range = range + 1
+        checker = self.friendRCByRange[range]
+    until checker
+    return checker
+end
+
+function lib:GetHarmMinChecker(range, exactMatch)
+    local checker = self.harmRCByRange[range]
+    if checker or exactMatch then
+        return checker
+    end
+    local maxChecker = self.harmRC[1]
+    if not maxChecker or range > maxChecker.range then
+        return nil
+    end
+    repeat
+        range = range + 1
+        checker = self.harmRCByRange[range]
+    until checker
+    return checker
+end
+
+function lib:GetFriendMaxChecker(range, exactMatch)
+    local checker = self.friendRCByRange[range]
+    if checker or exactMatch then
+        return checker
+    end
+    local minChecker = self.friendRC[#self.friendRC]
+    if not minChecker or range < minChecker.range then
+        return nil
+    end
+    repeat
+        range = range - 1
+        checker = self.friendRCByRange[range]
+    until checker
+    return checker
+end
+
+function lib:GetHarmMaxChecker(range, exactMatch)
+    local checker = self.harmRCByRange[range]
+    if checker or exactMatch then
+        return checker
+    end
+    local minChecker = self.harmRC[#self.harmRC]
+    if not minChecker or range < minChecker.range then
+        print("### fail", minChecker, range, minChecker and minChecker.range or nil)
+        return nil
+    end
+    repeat
+        range = range - 1
+        checker = self.harmRCByRange[range]
+    until checker
+    return checker
+end
+
+function lib:GetFriendChecker(range)
+    return self.friendRCByRange(range)
+end
+
+--- Return a checker for the given range for enemy units
+-- @param range the range to check for
+-- @return checker function or nil if no suitable checker is available
+-- @see checker
+function lib:GetHarmChecker(range)
+    return self.harmRCByRange(range)
+end
+
+--- Get a range estimate as minRange, maxRange
+-- @param unit the target unit to check range to
+-- @usage local minRange, maxRange = rc:GetRange('target')
+-- @return minRange, maxRange pair if a range estimate could be determined, nil otherwise. maxRange is nil if unit is further away then the highest possible range we can check
+function lib:GetRange(unit)
+    if not isTargetValid(unit) then return nil end
+    if UnitCanAttack("player", unit) then
+        return getRange(unit, self.harmRC)
+    elseif UnitCanAssist("player", unit) then
+        return getRange(unit, self.friendRC)
+    else
+        return getRange(unit, self.miscRC)
+    end
+end
+
+-- keep this for compatibility
+lib.getRange = lib.GetRange
 
 -- >> Public API
 
-function RangeCheck:OnEvent(event, ...)
+function lib:OnEvent(event, ...)
     -- print("### Event: " .. tostring(event))
     if type(self[event]) == 'function' then
         self[event](self, event, ...)
     end
 end
 
-function RangeCheck:LEARNED_SPELL_IN_TAB()
+function lib:LEARNED_SPELL_IN_TAB()
     self:init(true)
 end
 
-function RangeCheck:CHARACTER_POINTS_CHANGED()
+function lib:CHARACTER_POINTS_CHANGED()
     self:init(true)
 end
 
-function RangeCheck:PLAYER_TALENT_UPDATE()
+function lib:PLAYER_TALENT_UPDATE()
     self:init(true)
 end
 
-function RangeCheck:GLYPH_ADDED()
+function lib:GLYPH_ADDED()
     self:init(true)
 end
 
-function RangeCheck:GLYPH_REMOVED()
+function lib:GLYPH_REMOVED()
     self:init(true)
 end
 
-function RangeCheck:GLYPH_UPDATED()
+function lib:GLYPH_UPDATED()
     self:init(true)
 end
 
-function RangeCheck:UNIT_INVENTORY_CHANGED(event, unit)
+function lib:UNIT_INVENTORY_CHANGED(event, unit)
     if self.initialized and unit == "player" and self.handSlotItem ~= GetInventoryItemLink("player", HandSlotId) then
         self:init(true)
     end
 end
 
-function RangeCheck:processItemRequests(itemRequests)
+function lib:processItemRequests(itemRequests)
     while true do
         local range, items = next(itemRequests)
         if not range then return end
@@ -639,28 +818,29 @@ function RangeCheck:processItemRequests(itemRequests)
     end
 end
 
-function RangeCheck:initialOnUpdate()
-        self:init()
-        if friendItemRequests then
-            if self:processItemRequests(friendItemRequests) then return end
-            friendItemRequests = nil
-        end
-        if harmItemRequests then
-            if self:processItemRequests(harmItemRequests) then return end
-            harmItemRequests = nil
-        end
-        if foundNewItems then
-            self:init(true)
-            foundNewItems = nil
-        end
-        if cacheAllItems then
-            print(MAJOR_VERSION .. ": finished cache")
-            cacheAllItems = nil
-        end
-        self.frame:SetScript("OnUpdate", nil)
-        self.frame:Hide()
+function lib:initialOnUpdate()
+    self:init()
+    if friendItemRequests then
+        if self:processItemRequests(friendItemRequests) then return end
+        friendItemRequests = nil
+    end
+    if harmItemRequests then
+        if self:processItemRequests(harmItemRequests) then return end
+        harmItemRequests = nil
+    end
+    if foundNewItems then
+        self:init(true)
+        foundNewItems = nil
+    end
+    if cacheAllItems then
+        print(MAJOR_VERSION .. ": finished cache")
+        cacheAllItems = nil
+    end
+    self.frame:SetScript("OnUpdate", nil)
+    self.frame:Hide()
 end
 
+--@do-not-package@
 -- << DEBUG STUFF
 
 local function pairsByKeys(t, f)
@@ -679,7 +859,7 @@ local function pairsByKeys(t, f)
     return iter
 end
 
-function RangeCheck:cacheAllItems()
+function lib:cacheAllItems()
     if (not self.initialized) or harmItemRequests then
         print(MAJOR_VERSION .. ": init hasn't finished yet")
         return
@@ -690,7 +870,7 @@ function RangeCheck:cacheAllItems()
     self.frame:Show()
 end
 
-function RangeCheck:startMeasurement(unit, resultTable)
+function lib:startMeasurement(unit, resultTable)
     if (not self.initialized) or harmItemRequests then
         print(MAJOR_VERSION .. ": init hasn't finished yet")
         return
@@ -726,14 +906,14 @@ function RangeCheck:startMeasurement(unit, resultTable)
     self.frame:Show()
 end
 
-function RangeCheck:stopMeasurement()
+function lib:stopMeasurement()
     print(MAJOR_VERSION .. ": stopping measurements")
     self.frame:Hide()
     self.frame:SetScript("OnUpdate", nil)
     self.measurements = nil
 end
 
-function RangeCheck:checkItems(itemList, verbose)
+function lib:checkItems(itemList, verbose)
     if not itemList then return end
     for range, items in pairsByKeys(itemList) do
         for _, item in ipairs(items) do
@@ -751,7 +931,7 @@ function RangeCheck:checkItems(itemList, verbose)
     end
 end
 
-function RangeCheck:checkSpells(spellList, verbose)
+function lib:checkSpells(spellList, verbose)
     if not spellList then return end
     for i, sid in ipairs(spellList) do
         local name, _, _, _, _, _, _, minRange, range = GetSpellInfo(sid)
@@ -772,14 +952,14 @@ function RangeCheck:checkSpells(spellList, verbose)
     end
 end
 
-function RangeCheck:checkAllItems()
+function lib:checkAllItems()
     print(MAJOR_VERSION .. ": Checking FriendItems...")
     self:checkItems(FriendItems, true)
     print(MAJOR_VERSION .. ": Checking HarmItems...")
     self:checkItems(HarmItems, true)
 end
 
-function RangeCheck:checkAllCheckers()
+function lib:checkAllCheckers()
     if not isTargetValid("target") then
         print(MAJOR_VERSION .. ": Invalid unit, cannot check")
         return
@@ -801,7 +981,7 @@ function RangeCheck:checkAllCheckers()
 end
 
 local GetPlayerMapPosition = GetPlayerMapPosition
-function RangeCheck:updateMeasurements()
+function lib:updateMeasurements()
     local now = GetTime() - self.measurementStart
     local x, y = GetPlayerMapPosition("player")
     local t = self.measurements[now]
@@ -838,10 +1018,11 @@ function RangeCheck:updateMeasurements()
 end
 
 -- >> DEBUG STUFF
+--@end-do-not-package@ 
 
 -- << load-time initialization 
 
-function RangeCheck:activate()
+function lib:activate()
     if not self.frame then
         local frame = CreateFrame("Frame")
         self.frame = frame
@@ -863,5 +1044,16 @@ function RangeCheck:activate()
     self.frame:SetScript("OnUpdate", function(frame, ...) self:initialOnUpdate() end)
 end
 
-RangeCheck:activate()
-RangeCheck = nil
+--- BEGIN CallbackHandler stuff
+
+lib.RegisterCallback = lib.RegisterCallback or function(...)
+    local CBH = LibStub("CallbackHandler-1.0")
+    lib.RegisterCallback = nil -- extra safety, we shouldn't get this far if CBH is not found, but better an error later than an infinite recursion now
+    lib.callbacks = CBH:New(lib)
+    -- ok, CBH hopefully injected or new shiny RegisterCallback
+    return lib.RegisterCallback(...)
+end
+
+--- END CallbackHandler stuff
+
+lib:activate()
