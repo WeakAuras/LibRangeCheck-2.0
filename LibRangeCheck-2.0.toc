@@ -9,4 +9,5 @@
 ## X-License: Public Domain
 
 LibStub.lua
+CallbackHandler-1.0\CallbackHandler-1.0.xml
 LibRangeCheck-2.0\LibRangeCheck-2.0.lua
