@@ -1,3 +1,4 @@
-type: luadoc
-input-files: "LibRangeCheck-2.0/*.lua"
-output-directory: API
+-
+    type: luadoc
+    input-files: "LibRangeCheck-2.0/*.lua"
+    output-directory: API
