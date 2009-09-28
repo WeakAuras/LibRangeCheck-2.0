@@ -774,8 +774,8 @@ end
 
 --- Get a range estimate as minRange, maxRange
 -- @param unit the target unit to check range to
--- @usage local minRange, maxRange = rc:GetRange('target')
 -- @return minRange, maxRange pair if a range estimate could be determined, nil otherwise. **maxRange** is nil if **unit** is further away than the highest possible range we can check
+-- @usage local minRange, maxRange = rc:GetRange('target')
 function lib:GetRange(unit)
     if not isTargetValid(unit) then return nil end
     if UnitCanAttack("player", unit) then
