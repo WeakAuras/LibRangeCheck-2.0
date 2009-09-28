@@ -28,7 +28,7 @@ License: Public Domain
 -- 
 -- local meleeChecker = rc:GetFriendMaxChecker(rc.MeleeRange) -- 5 yds
 -- for i = 1, 4 do
---     -- check if unit is valid, etc
+--     -- TODO: check if unit is valid, etc
 --     if meleeChecker("party" .. i) then
 --         print("Party member " .. i .. " is in Melee range")
 --     end
@@ -563,7 +563,7 @@ lib.failedItemRequests = {}
 
 --@do-not-package@
 -- this is here just for .docmeta
---- A checker function
+--- A checker function. This type of function is returned by the various Get*Checker() calls.
 -- @param unit the unit to check range to
 -- @return true if the unit is within the range for this checker
 local function checker(unit)
@@ -571,8 +571,10 @@ end
 
 --@end-do-not-package@ 
 
+--- The callback name that is fired when checkers are changed
 lib.CHECKERS_CHANGED = "CHECKERS_CHANGED"
 -- "export" it, maybe someone will need it for formatting
+--- Constant for Melee range (5yd)
 lib.MeleeRange = MeleeRange
 
 function lib:findSpellIndex(spell)
@@ -760,6 +762,10 @@ function lib:GetHarmMaxChecker(range, exactMatch)
     return checker
 end
 
+--- Return a checker for the given range for friendly units
+-- @param *range* the range to check for
+-- @return checker function or nil if no suitable checker is available
+-- @see checker
 function lib:GetFriendChecker(range)
     return self.friendRCByRange(range)
 end
@@ -1099,6 +1105,8 @@ end
 do
     local lib = lib -- to keep a ref even though later we nil lib
     --- Register a callback to get called when checkers are updated
+    -- @class function
+    -- @name lib.RegisterCallback
     -- @usage
     -- rc.RegisterCallback(self, rc.CHECKERS_CHANGED, "myCallback")
     -- @see CallbackHandler-1.0 documentation for more details
