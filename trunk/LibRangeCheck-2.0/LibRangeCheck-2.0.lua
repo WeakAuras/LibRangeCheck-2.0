@@ -1098,6 +1098,10 @@ end
 
 do
     local lib = lib -- to keep a ref even though later we nil lib
+    --- Register a callback to get called when checkers are updated
+    -- @usage
+    -- rc.RegisterCallback(self, rc.CHECKERS_CHANGED, "myCallback")
+    -- @see CallbackHandler-1.0 documentation for more details
     lib.RegisterCallback = lib.RegisterCallback or function(...)
         local CBH = LibStub("CallbackHandler-1.0")
         lib.RegisterCallback = nil -- extra safety, we shouldn't get this far if CBH is not found, but better an error later than an infinite recursion now
