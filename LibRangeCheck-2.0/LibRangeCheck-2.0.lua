@@ -564,18 +564,18 @@ lib.failedItemRequests = {}
 --@do-not-package@
 -- this is here just for .docmeta
 --- A checker function. This type of function is returned by the various Get*Checker() calls.
--- @param unit the unit to check range to
--- @return true if the unit is within the range for this checker
+-- @param unit the unit to check range to.
+-- @return **true** if the unit is within the range for this checker.
 local function checker(unit)
 end
 
 --@end-do-not-package@ 
 
---- The callback name that is fired when checkers are changed
+--- The callback name that is fired when checkers are changed.
 -- @field
 lib.CHECKERS_CHANGED = "CHECKERS_CHANGED"
 -- "export" it, maybe someone will need it for formatting
---- Constant for Melee range (5yd)
+--- Constant for Melee range (5yd).
 -- @field
 lib.MeleeRange = MeleeRange
 
@@ -680,7 +680,7 @@ function lib:GetHarmCheckers()
 end
 
 --- Return a checker suitable for out-of-range checking on friendly units, that is, a checker whose range is equal or larger than the requested range.
--- @param **range** the range to check for.
+-- @param range the range to check for.
 -- @return **checker**, **range** pair or **nil** if no suitable checker is available. **range** is the actual range the returned **checker** checks for.
 function lib:GetFriendMinChecker(range)
     local checker = self.friendRCByRange[range]
@@ -699,7 +699,7 @@ function lib:GetFriendMinChecker(range)
 end
 
 --- Return a checker suitable for out-of-range checking on enemy units, that is, a checker whose range is equal or larger than the requested range.
--- @param **range** the range to check for.
+-- @param range the range to check for.
 -- @return **checker**, **range** pair or **nil** if no suitable checker is available. **range** is the actual range the returned **checker** checks for.
 function lib:GetHarmMinChecker(range)
     local checker = self.harmRCByRange[range]
@@ -718,7 +718,7 @@ function lib:GetHarmMinChecker(range)
 end
 
 --- Return a checker suitable for in-range checking on friendly units, that is, a checker whose range is equal or smaller than the requested range.
--- @param **range** the range to check for.
+-- @param range the range to check for.
 -- @return **checker**, **range** pair or **nil** if no suitable checker is available. **range** is the actual range the returned **checker** checks for.
 function lib:GetFriendMaxChecker(range)
     local checker = self.friendRCByRange[range]
@@ -737,7 +737,7 @@ function lib:GetFriendMaxChecker(range)
 end
 
 --- Return a checker suitable for in-range checking on enemy units, that is, a checker whose range is equal or smaller than the requested range.
--- @param **range** the range to check for.
+-- @param range the range to check for.
 -- @return **checker**, **range** pair or **nil** if no suitable checker is available. **range** is the actual range the returned **checker** checks for.
 function lib:GetHarmMaxChecker(range)
     local checker = self.harmRCByRange[range]
@@ -756,24 +756,26 @@ function lib:GetHarmMaxChecker(range)
 end
 
 --- Return a checker for the given range for friendly units.
--- @param **range** the range to check for.
+-- @param range the range to check for.
 -- @return **checker** function or **nil** if no suitable checker is available.
 function lib:GetFriendChecker(range)
     return self.friendRCByRange(range)
 end
 
 --- Return a checker for the given range for enemy units.
--- @param **range** the range to check for.
+-- @param range the range to check for.
 -- @return **checker** function or **nil** if no suitable checker is available.
 function lib:GetHarmChecker(range)
     return self.harmRCByRange(range)
 end
 
 --- Get a range estimate as **minRange**, **maxRange**.
--- @param **unit** the target unit to check range to.
+-- @param unit the target unit to check range to.
 -- @return **minRange**, **maxRange** pair if a range estimate could be determined, **nil** otherwise. **maxRange** is **nil** if **unit** is further away than the highest possible range we can check.
 -- Includes checks for unit validity and friendly/enemy status.
--- @usage local minRange, maxRange = rc:GetRange('target')
+-- @usage
+-- local rc = LibStub("LibRangeCheck-2.0")
+-- local minRange, maxRange = rc:GetRange('target')
 function lib:GetRange(unit)
     if not isTargetValid(unit) then return nil end
     if UnitCanAttack("player", unit) then
