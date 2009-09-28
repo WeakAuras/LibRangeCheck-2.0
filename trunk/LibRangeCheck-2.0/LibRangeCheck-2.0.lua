@@ -572,9 +572,11 @@ end
 --@end-do-not-package@ 
 
 --- The callback name that is fired when checkers are changed
+-- @field
 lib.CHECKERS_CHANGED = "CHECKERS_CHANGED"
 -- "export" it, maybe someone will need it for formatting
 --- Constant for Melee range (5yd)
+-- @field
 lib.MeleeRange = MeleeRange
 
 function lib:findSpellIndex(spell)
@@ -681,7 +683,7 @@ end
 -- @param range the requested range to check for
 -- @param exactMatch return nil if no checker is available for the given range instead of searching for the nearest suitable one
 -- @return checker function or nil if no suitable checker is available
--- @see checker
+-- @see checker(unit)
 function lib:GetFriendMinChecker(range, exactMatch)
     local checker = self.friendRCByRange[range]
     if checker or exactMatch then
@@ -702,7 +704,7 @@ end
 -- @param range the requested range to check for
 -- @param exactMatch return nil if no checker is available for the given range instead of searching for the nearest suitable one
 -- @return checker function or nil if no suitable checker is available
--- @see checker
+-- @see checker(unit)
 function lib:GetHarmMinChecker(range, exactMatch)
     local checker = self.harmRCByRange[range]
     if checker or exactMatch then
@@ -723,7 +725,7 @@ end
 -- @param range the requested range to check for
 -- @param exactMatch return nil if no checker is available for the given range instead of searching for the nearest suitable one
 -- @return checker function or nil if no suitable checker is available
--- @see checker
+-- @see checker(unit)
 function lib:GetFriendMaxChecker(range, exactMatch)
     local checker = self.friendRCByRange[range]
     if checker or exactMatch then
@@ -744,7 +746,7 @@ end
 -- @param range the requested range to check for
 -- @param exactMatch return nil if no checker is available for the given range instead of searching for the nearest suitable one
 -- @return checker function or nil if no suitable checker is available
--- @see checker
+-- @see checker(unit)
 function lib:GetHarmMaxChecker(range, exactMatch)
     local checker = self.harmRCByRange[range]
     if checker or exactMatch then
@@ -765,7 +767,7 @@ end
 --- Return a checker for the given range for friendly units
 -- @param *range* the range to check for
 -- @return checker function or nil if no suitable checker is available
--- @see checker
+-- @see checker(unit)
 function lib:GetFriendChecker(range)
     return self.friendRCByRange(range)
 end
@@ -773,7 +775,7 @@ end
 --- Return a checker for the given range for enemy units
 -- @param range the range to check for
 -- @return checker function or nil if no suitable checker is available
--- @see checker
+-- @see checker(unit)
 function lib:GetHarmChecker(range)
     return self.harmRCByRange(range)
 end
@@ -1109,6 +1111,8 @@ do
     -- @name lib.RegisterCallback
     -- @usage
     -- rc.RegisterCallback(self, rc.CHECKERS_CHANGED, "myCallback")
+    -- -- or
+    -- rc.RegisterCallback(self, "CHECKERS_CHANGED", someCallbackFunction)
     -- @see CallbackHandler-1.0 documentation for more details
     lib.RegisterCallback = lib.RegisterCallback or function(...)
         local CBH = LibStub("CallbackHandler-1.0")
