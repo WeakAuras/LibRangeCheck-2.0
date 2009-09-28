@@ -27,7 +27,7 @@ License: Public Domain
 -- end
 -- 
 -- local meleeChecker = rc:GetFriendMaxChecker(rc.MeleeRange) -- 5 yds
--- for i = 1, 5 do
+-- for i = 1, 4 do
 --     -- check if unit is valid, etc
 --     if meleeChecker("party" .. i) then
 --         print("Party member " .. i .. " is in Melee range")
