@@ -8,6 +8,34 @@ Dependencies: LibStub
 License: Public Domain
 ]]
 
+--- LibRangeCheck-2.0 provides an easy way to check for ranges and get suitable range checking functions for specific ranges.\\
+-- The checkers use spell and item range checks, or interact based checks for special units where those two cannot be used.\\
+-- The lib handles the refreshing of checker lists in case talents / spells / glyphs change and in some special cases when equipment changes (for example some of the mage pvp gloves change the range of the Fire Blast spell), and also handles the caching of items used for item-based range checks.\\
+-- A callback is provided for those interested in checker changes.
+-- @usage
+-- local rc = LibStub("LibRangeCheck-2.0")
+-- 
+-- rc.RegisterCallback(self, rc.CHECKERS_CHANGED, function() print("need to refresh my stored checkers") end)
+-- 
+-- local minRange, maxRange = rc:GetRange('target')
+-- if not minRange then
+--     print("cannot get range estimate for target")
+-- elseif not maxRange then
+--     print("target is over " .. minRange .. " yards")
+-- else
+--     print("target is between " .. minRange .. " and " .. maxRange .. " yards")
+-- end
+-- 
+-- local meleeChecker = rc:GetFriendMaxChecker(rc.MeleeRange) -- 5 yds
+-- for i = 1, 5 do
+--     -- check if unit is valid, etc
+--     if meleeChecker("party" .. i) then
+--         print("Party member " .. i .. " is in Melee range")
+--     end
+-- end
+--
+-- @class file
+-- @name LibRangeCheck-2.0
 local MAJOR_VERSION = "LibRangeCheck-2.0"
 local MINOR_VERSION = tonumber(("$Revision$"):match("%d+")) + 100000
 
@@ -637,14 +665,21 @@ function lib:init(forced)
     end
 end
 
+--- Return an iterator for checkers usable on friendly units as (range, checker) pairs
 function lib:GetFriendCheckers()
     return pairs(self.friendRCByRange)
 end
 
+--- Return an iterator for checkers usable on enemy units as (range, checker) pairs
 function lib:GetHarmCheckers()
     return pairs(self.harmRCByRange)
 end
 
+--- Return a checker suitable for out-of-range checking on friendly units, that is, a checker whose range is equal or larger than the requested range.
+-- @param range the requested range to check for
+-- @param exactMatch return nil if no checker is available for the given range instead of searching for the nearest suitable one
+-- @return checker function or nil if no suitable checker is available
+-- @see checker
 function lib:GetFriendMinChecker(range, exactMatch)
     local checker = self.friendRCByRange[range]
     if checker or exactMatch then
@@ -661,6 +696,11 @@ function lib:GetFriendMinChecker(range, exactMatch)
     return checker
 end
 
+--- Return a checker suitable for out-of-range checking on enemy units, that is, a checker whose range is equal or larger than the requested range.
+-- @param range the requested range to check for
+-- @param exactMatch return nil if no checker is available for the given range instead of searching for the nearest suitable one
+-- @return checker function or nil if no suitable checker is available
+-- @see checker
 function lib:GetHarmMinChecker(range, exactMatch)
     local checker = self.harmRCByRange[range]
     if checker or exactMatch then
@@ -677,6 +717,11 @@ function lib:GetHarmMinChecker(range, exactMatch)
     return checker
 end
 
+--- Return a checker suitable for in-range checking on friendly units, that is, a checker whose range is equal or smaller than the requested range.
+-- @param range the requested range to check for
+-- @param exactMatch return nil if no checker is available for the given range instead of searching for the nearest suitable one
+-- @return checker function or nil if no suitable checker is available
+-- @see checker
 function lib:GetFriendMaxChecker(range, exactMatch)
     local checker = self.friendRCByRange[range]
     if checker or exactMatch then
@@ -693,6 +738,11 @@ function lib:GetFriendMaxChecker(range, exactMatch)
     return checker
 end
 
+--- Return a checker suitable for in-range checking on enemy units, that is, a checker whose range is equal or smaller than the requested range.
+-- @param range the requested range to check for
+-- @param exactMatch return nil if no checker is available for the given range instead of searching for the nearest suitable one
+-- @return checker function or nil if no suitable checker is available
+-- @see checker
 function lib:GetHarmMaxChecker(range, exactMatch)
     local checker = self.harmRCByRange[range]
     if checker or exactMatch then
@@ -725,7 +775,7 @@ end
 --- Get a range estimate as minRange, maxRange
 -- @param unit the target unit to check range to
 -- @usage local minRange, maxRange = rc:GetRange('target')
--- @return minRange, maxRange pair if a range estimate could be determined, nil otherwise. maxRange is nil if unit is further away then the highest possible range we can check
+-- @return minRange, maxRange pair if a range estimate could be determined, nil otherwise. **maxRange** is nil if **unit** is further away than the highest possible range we can check
 function lib:GetRange(unit)
     if not isTargetValid(unit) then return nil end
     if UnitCanAttack("player", unit) then
