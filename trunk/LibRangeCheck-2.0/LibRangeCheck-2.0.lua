@@ -383,10 +383,6 @@ end
 -- minRangeCheck is a function to check if spells with minimum range are really out of range, or fail due to range < minRange. See :init() for its setup
 local minRangeCheck = function(unit) return CheckInteractDistance(unit, 2) end
 
-local function isTargetValid(unit)
-    return UnitExists(unit) and (not UnitIsDeadOrGhost(unit))
-end
-
 -- return the spellIndex of the given spell by scanning the spellbook
 local function findSpellIdx(spellName)
     local i = 1
@@ -777,7 +773,12 @@ end
 -- local rc = LibStub("LibRangeCheck-2.0")
 -- local minRange, maxRange = rc:GetRange('target')
 function lib:GetRange(unit)
-    if not isTargetValid(unit) then return nil end
+    if not UnitExists(unit) then
+        return nil
+    end
+    if UnitIsDeadOrGhost(unit) then
+        return getRange(unit, self.miscRC)
+    end
     if UnitCanAttack("player", unit) then
         return getRange(unit, self.harmRC)
     elseif UnitCanAssist("player", unit) then
@@ -1010,7 +1011,7 @@ function lib:checkAllItems()
 end
 
 function lib:checkAllCheckers()
-    if not isTargetValid("target") then
+    if not UnitExists("target") then
         print(MAJOR_VERSION .. ": Invalid unit, cannot check")
         return
     end
