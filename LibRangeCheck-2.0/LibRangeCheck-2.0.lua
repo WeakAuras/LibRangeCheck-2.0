@@ -349,8 +349,9 @@ local friendItemRequests
 local harmItemRequests
 
 local checkerCache_Spell = {}
-local checkerCache_SpellWithMinRange = {}
+local checkerCache_SpellWithMin = {}
 local checkerCache_Item = {}
+local checkerCache_Interact = {}
 
 -- helper functions
 
@@ -408,6 +409,60 @@ local function addChecker(t, range, minRange, checker)
     tinsert(t, rc)
 end
 
+local function getChecker_Spell(spellIdx)
+    local func = checkerCache_Spell[spellIdx] 
+    if not func then
+        func = function(unit)
+            if IsSpellInRange(spellIdx, BOOKTYPE_SPELL, unit) == 1 then
+                 return true
+            end
+        end
+        checkerCache_Spell[spellIdx] = func
+    end
+    return func
+end
+
+local function getChecker_SpellWithMin(spellIdx)
+    local func = checkerCache_SpellWithMin[spellIdx] 
+    if not func then
+        func = function(unit)
+            if IsSpellInRange(spellIdx, BOOKTYPE_SPELL, unit) == 1 then
+                return true
+            elseif minRangeCheck(unit) then
+                return true, true
+            end
+        end
+        checkerCache_SpellWithMin[key] = func
+    end
+    return func
+end
+
+local function getChecker_Item(item)
+    local func = checkerCache_Item[item]
+    if not func then
+        func = function(unit)
+            if IsItemInRange(item, unit) == 1 then
+                 return true
+            end
+        end
+        checkerCache_Item[item] = func
+    end
+    return func
+end
+
+local function getChecker_Interact(index)
+    local func = checkerCache_Interact[index]
+    if not func then
+        func = function(unit)
+            if CheckInteractDistance(unit, index) then
+                 return true
+            end
+        end
+        checkerCache_Interact[index] = func
+    end
+    return func
+end
+
 local function createCheckerList(spellList, itemList, interactList)
     local res = {}
     if spellList then
@@ -424,26 +479,11 @@ local function createCheckerList(spellList, itemList, interactList)
                 if range == 0 then
                     range = MeleeRange
                 end
-                local func = checkerCache_Spell[sid] 
-                if not func then
-                    if minRange then
-                        func = function(unit)
-                            if IsSpellInRange(spellIdx, BOOKTYPE_SPELL, unit) == 1 then
-                                return true
-                            elseif minRangeCheck(unit) then
-                                return true, true
-                            end
-                        end
-                    else
-                        func = function(unit)
-                            if IsSpellInRange(spellIdx, BOOKTYPE_SPELL, unit) == 1 then
-                                 return true
-                            end
-                        end
-                    end
-                    checkerCache_Spell[sid] = func
+                if minRange then
+                    addChecker(res, range, minRange, getChecker_SpellWithMin(spellIdx))
+                else
+                    addChecker(res, range, minRange, getChecker_Spell(spellIdx))
                 end
-                addChecker(res, range, minRange, func)
             end
         end
     end
@@ -452,16 +492,7 @@ local function createCheckerList(spellList, itemList, interactList)
         for range, items in pairs(itemList) do
             for i, item in ipairs(items) do
                 if GetItemInfo(item) then
-                    local func = checkerCache_Item[item]
-                    if not func then
-                        func = function(unit)
-                            if IsItemInRange(item, unit) == 1 then
-                                 return true
-                            end
-                        end
-                        checkerCache_Item[item] = func
-                    end
-                    addChecker(res, range, nil, func)
+                    addChecker(res, range, nil, getChecker_Item(item))
                     break
                 end
             end
@@ -470,9 +501,7 @@ local function createCheckerList(spellList, itemList, interactList)
     
     if interactList and not next(res) then
         for index, range in pairs(interactList) do
-            addChecker(res, range, nil, function(unit)
-                if CheckInteractDistance(unit, index) then return true end
-            end)
+            addChecker(res, range, nil,  getChecker_Interact(index))
         end
     end
 
@@ -663,9 +692,9 @@ function lib:init(forced)
         if playerClass == "HUNTER" or playerRace == "Tauren" then
             -- for hunters, use interact4 as it's safer
             -- for Taurens interact4 is actually closer than 25yd and interact2 is closer than 8yd, so we can't use that
-            minRangeCheck = function(unit) return CheckInteractDistance(unit, 4) end
+            minRangeCheck = getChecker_Interact(4)
         else
-            minRangeCheck = function(unit) return CheckInteractDistance(unit, 2) end
+            minRangeCheck = getChecker_Interact(2)
         end
     end
 
