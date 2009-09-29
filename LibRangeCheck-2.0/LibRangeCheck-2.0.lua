@@ -571,8 +571,8 @@ end
 lib.checkerCache_Spell = lib.checkerCache_Spell or {}
 lib.checkerCache_Item = lib.checkerCache_Item or {}
 lib.miscRC = createCheckerList(nil, nil, DefaultInteractList)
-lib.friendRC = lib.miscRC
-lib.harmRC = lib.miscRC
+lib.friendRC = createCheckerList(nil, nil, DefaultInteractList)
+lib.harmRC = createCheckerList(nil, nil, DefaultInteractList)
 
 lib.failedItemRequests = {}
 
@@ -693,7 +693,7 @@ end
 
 --- Return an iterator for checkers usable on enemy units as (**range**, **checker**) pairs.
 function lib:GetHarmCheckers()
-    return rcIterator(self.harmRCByRange)
+    return rcIterator(self.harmRC)
 end
 
 --- Return a checker suitable for out-of-range checking on friendly units, that is, a checker whose range is equal or larger than the requested range.
