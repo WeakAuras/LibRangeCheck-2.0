@@ -508,34 +508,58 @@ local function getRange(unit, checkerList)
     return min, max
 end
 
-local function updateRanges(byRangeTable, checkerList)
-    local start = 0
-    for range, checker in pairs(byRangeTable) do
-        if range > start then
-            start = range
+local function updateCheckers(origList, newList)
+    if #origList ~= #newList then
+        wipe(origList)
+        copyTable(newList, origList)
+        return true
+    end
+    for i = 1, #origList do
+        if origList[i].range ~= newList[i].range or origList[i].checker ~= newList[i].checker then
+            wipe(origList)
+            copyTable(newList, origList)
+            return true
         end
     end
-    local changed = false
+end
+
+local function rcIterator(checkerList)
+    local curr = #checkerList
+    return function()
+        local rc = checkerList[curr]
+        if not rc then
+             return nil
+        end
+        curr = curr - 1
+        return rc.range, rc.checker
+    end
+end
+
+local function getMinChecker(checkerList, range)
+    local checker, checkerRange
     for _, rc in ipairs(checkerList) do
-        for i = start, rc.range + 1, -1 do
-            if byRangeTable[i] then
-                changed = true
-                byRangeTable[i] = nil
-            end
+        if rc.range < range then
+            return checker, checkerRange
         end
-        if byRangeTable[rc.range] ~= rc.checker then
-            changed = true
-            byRangeTable[rc.range] = rc.checker
-        end
-        start = rc.range - 1
+        checker, checkerRange = rc.checker, rc.range
     end
-    for i = start, 1, -1 do
-        if byRangeTable[i] then
-            changed = true
-            byRangeTable[i] = nil
+    return checker, checkerRange
+end
+
+local function getMaxChecker(checkerList, range)
+    for _, rc in ipairs(checkerList) do
+        if rc.range <= range then
+            return rc.checker, rc.range
         end
     end
-    return changed
+end
+
+local function getChecker(checkerList, range)
+    for _, rc in ipairs(checkerList) do
+        if rc.range == range then
+            return rc.checker
+        end
+    end
 end
 
 -- OK, here comes the actual lib
@@ -549,9 +573,6 @@ lib.checkerCache_Item = lib.checkerCache_Item or {}
 lib.miscRC = createCheckerList(nil, nil, DefaultInteractList)
 lib.friendRC = lib.miscRC
 lib.harmRC = lib.miscRC
-
-lib.friendRCByRange = {}
-lib.harmRCByRange = {}
 
 lib.failedItemRequests = {}
 
@@ -649,15 +670,15 @@ function lib:init(forced)
     end
 
     local interactList = InteractLists[playerRace] or DefaultInteractList
-    self.friendRC = createCheckerList(FriendSpells[playerClass], FriendItems, interactList)
-    self.harmRC = createCheckerList(HarmSpells[playerClass], HarmItems, interactList)
-    self.miscRC = createCheckerList(nil, nil, interactList)
     self.handSlotItem = GetInventoryItemLink("player", HandSlotId)
     local changed = false
-    if updateRanges(self.friendRCByRange, self.friendRC) then
+    if updateCheckers(self.friendRC, createCheckerList(FriendSpells[playerClass], FriendItems, interactList)) then
         changed = true
     end
-    if updateRanges(self.harmRCByRange, self.harmRC) then
+    if updateCheckers(self.harmRC, createCheckerList(HarmSpells[playerClass], HarmItems, interactList)) then
+        changed = true
+    end
+    if updateCheckers(self.miscRC, createCheckerList(nil, nil, interactList)) then
         changed = true
     end
     if changed and self.callbacks then
@@ -667,102 +688,54 @@ end
 
 --- Return an iterator for checkers usable on friendly units as (**range**, **checker**) pairs.
 function lib:GetFriendCheckers()
-    return pairs(self.friendRCByRange)
+    return rcIterator(self.friendRC)
 end
 
 --- Return an iterator for checkers usable on enemy units as (**range**, **checker**) pairs.
 function lib:GetHarmCheckers()
-    return pairs(self.harmRCByRange)
+    return rcIterator(self.harmRCByRange)
 end
 
 --- Return a checker suitable for out-of-range checking on friendly units, that is, a checker whose range is equal or larger than the requested range.
 -- @param range the range to check for.
 -- @return **checker**, **range** pair or **nil** if no suitable checker is available. **range** is the actual range the returned **checker** checks for.
 function lib:GetFriendMinChecker(range)
-    local checker = self.friendRCByRange[range]
-    if checker then
-        return checker, range
-    end
-    local maxChecker = self.friendRC[1]
-    if not maxChecker or range > maxChecker.range then
-        return nil
-    end
-    repeat
-        range = range + 1
-        checker = self.friendRCByRange[range]
-    until checker
-    return checker, range
+    return getMinChecker(self.friendRC, range)
 end
 
 --- Return a checker suitable for out-of-range checking on enemy units, that is, a checker whose range is equal or larger than the requested range.
 -- @param range the range to check for.
 -- @return **checker**, **range** pair or **nil** if no suitable checker is available. **range** is the actual range the returned **checker** checks for.
 function lib:GetHarmMinChecker(range)
-    local checker = self.harmRCByRange[range]
-    if checker then
-        return checker, range
-    end
-    local maxChecker = self.harmRC[1]
-    if not maxChecker or range > maxChecker.range then
-        return nil
-    end
-    repeat
-        range = range + 1
-        checker = self.harmRCByRange[range]
-    until checker
-    return checker, range
+    return getMinChecker(self.harmRC, range)
 end
 
 --- Return a checker suitable for in-range checking on friendly units, that is, a checker whose range is equal or smaller than the requested range.
 -- @param range the range to check for.
 -- @return **checker**, **range** pair or **nil** if no suitable checker is available. **range** is the actual range the returned **checker** checks for.
 function lib:GetFriendMaxChecker(range)
-    local checker = self.friendRCByRange[range]
-    if checker then
-        return checker, range
-    end
-    local minChecker = self.friendRC[#self.friendRC]
-    if not minChecker or range < minChecker.range then
-        return nil
-    end
-    repeat
-        range = range - 1
-        checker = self.friendRCByRange[range]
-    until checker
-    return checker, range
+    return getMaxChecker(self.friendRC, range)
 end
 
 --- Return a checker suitable for in-range checking on enemy units, that is, a checker whose range is equal or smaller than the requested range.
 -- @param range the range to check for.
 -- @return **checker**, **range** pair or **nil** if no suitable checker is available. **range** is the actual range the returned **checker** checks for.
 function lib:GetHarmMaxChecker(range)
-    local checker = self.harmRCByRange[range]
-    if checker then
-        return checker, range
-    end
-    local minChecker = self.harmRC[#self.harmRC]
-    if not minChecker or range < minChecker.range then
-        return nil
-    end
-    repeat
-        range = range - 1
-        checker = self.harmRCByRange[range]
-    until checker
-    return checker, range
+    return getMaxChecker(self.harmRC, range)
 end
 
 --- Return a checker for the given range for friendly units.
 -- @param range the range to check for.
 -- @return **checker** function or **nil** if no suitable checker is available.
 function lib:GetFriendChecker(range)
-    return self.friendRCByRange(range)
+    return getChecker(self.friendRC, range)
 end
 
 --- Return a checker for the given range for enemy units.
 -- @param range the range to check for.
 -- @return **checker** function or **nil** if no suitable checker is available.
 function lib:GetHarmChecker(range)
-    return self.harmRCByRange(range)
+    return getChecker(self.harmRC, range)
 end
 
 --- Get a range estimate as **minRange**, **maxRange**.
