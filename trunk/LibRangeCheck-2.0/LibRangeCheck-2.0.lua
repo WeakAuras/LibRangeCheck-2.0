@@ -313,6 +313,7 @@ end
 
 -- cache
 
+local setmetatable = setmetatable
 local tonumber = tonumber
 local ipairs = ipairs
 local pairs = pairs
@@ -320,6 +321,7 @@ local tostring = tostring
 local print = print
 local next = next
 local type = type
+local wipe = wipe
 local tinsert = tinsert
 local tremove = tremove
 local BOOKTYPE_SPELL = BOOKTYPE_SPELL
@@ -348,10 +350,55 @@ local cacheAllItems
 local friendItemRequests
 local harmItemRequests
 
-local checkerCache_Spell = {}
-local checkerCache_SpellWithMin = {}
-local checkerCache_Item = {}
-local checkerCache_Interact = {}
+-- minRangeCheck is a function to check if spells with minimum range are really out of range, or fail due to range < minRange. See :init() for its setup
+local minRangeCheck = function(unit) return CheckInteractDistance(unit, 2) end
+
+local checkers_Spell = setmetatable({}, {
+    __index = function(t, spellIdx)
+        local func = function(unit)
+            if IsSpellInRange(spellIdx, BOOKTYPE_SPELL, unit) == 1 then
+                 return true
+            end
+        end
+        t[spellIdx] = func
+        return func
+    end
+})
+local checkers_SpellWithMin = setmetatable({}, {
+    __index = function(t, spellIdx)
+        local func = function(unit)
+            if IsSpellInRange(spellIdx, BOOKTYPE_SPELL, unit) == 1 then
+                return true
+            elseif minRangeCheck(unit) then
+                return true, true
+            end
+        end
+        t[spellIdx] = func
+        return func
+    end
+})
+local checkers_Item = setmetatable({}, {
+    __index = function(t, item)
+        local func = function(unit)
+            if IsItemInRange(item, unit) == 1 then
+                 return true
+            end
+        end
+        t[item] = func
+        return func
+    end
+})
+local checkers_Interact = setmetatable({}, {
+    __index = function(t, index)
+        local func = function(unit)
+            if CheckInteractDistance(unit, index) then
+                 return true
+            end
+        end
+        t[index] = func
+        return func
+    end
+})
 
 -- helper functions
 
@@ -381,9 +428,6 @@ local function requestItemInfo(itemId)
     TT:SetHyperlink(string.format("item:%d", itemId))
 end
 
--- minRangeCheck is a function to check if spells with minimum range are really out of range, or fail due to range < minRange. See :init() for its setup
-local minRangeCheck = function(unit) return CheckInteractDistance(unit, 2) end
-
 -- return the spellIndex of the given spell by scanning the spellbook
 local function findSpellIdx(spellName)
     local i = 1
@@ -409,60 +453,6 @@ local function addChecker(t, range, minRange, checker)
     tinsert(t, rc)
 end
 
-local function getChecker_Spell(spellIdx)
-    local func = checkerCache_Spell[spellIdx] 
-    if not func then
-        func = function(unit)
-            if IsSpellInRange(spellIdx, BOOKTYPE_SPELL, unit) == 1 then
-                 return true
-            end
-        end
-        checkerCache_Spell[spellIdx] = func
-    end
-    return func
-end
-
-local function getChecker_SpellWithMin(spellIdx)
-    local func = checkerCache_SpellWithMin[spellIdx] 
-    if not func then
-        func = function(unit)
-            if IsSpellInRange(spellIdx, BOOKTYPE_SPELL, unit) == 1 then
-                return true
-            elseif minRangeCheck(unit) then
-                return true, true
-            end
-        end
-        checkerCache_SpellWithMin[key] = func
-    end
-    return func
-end
-
-local function getChecker_Item(item)
-    local func = checkerCache_Item[item]
-    if not func then
-        func = function(unit)
-            if IsItemInRange(item, unit) == 1 then
-                 return true
-            end
-        end
-        checkerCache_Item[item] = func
-    end
-    return func
-end
-
-local function getChecker_Interact(index)
-    local func = checkerCache_Interact[index]
-    if not func then
-        func = function(unit)
-            if CheckInteractDistance(unit, index) then
-                 return true
-            end
-        end
-        checkerCache_Interact[index] = func
-    end
-    return func
-end
-
 local function createCheckerList(spellList, itemList, interactList)
     local res = {}
     if spellList then
@@ -480,9 +470,9 @@ local function createCheckerList(spellList, itemList, interactList)
                     range = MeleeRange
                 end
                 if minRange then
-                    addChecker(res, range, minRange, getChecker_SpellWithMin(spellIdx))
+                    addChecker(res, range, minRange, checkers_SpellWithMin[spellIdx])
                 else
-                    addChecker(res, range, minRange, getChecker_Spell(spellIdx))
+                    addChecker(res, range, minRange, checkers_Spell[spellIdx])
                 end
             end
         end
@@ -492,7 +482,7 @@ local function createCheckerList(spellList, itemList, interactList)
         for range, items in pairs(itemList) do
             for i, item in ipairs(items) do
                 if GetItemInfo(item) then
-                    addChecker(res, range, nil, getChecker_Item(item))
+                    addChecker(res, range, nil, checkers_Item[item])
                     break
                 end
             end
@@ -501,7 +491,7 @@ local function createCheckerList(spellList, itemList, interactList)
     
     if interactList and not next(res) then
         for index, range in pairs(interactList) do
-            addChecker(res, range, nil,  getChecker_Interact(index))
+            addChecker(res, range, nil,  checkers_Interact[index])
         end
     end
 
@@ -692,9 +682,9 @@ function lib:init(forced)
         if playerClass == "HUNTER" or playerRace == "Tauren" then
             -- for hunters, use interact4 as it's safer
             -- for Taurens interact4 is actually closer than 25yd and interact2 is closer than 8yd, so we can't use that
-            minRangeCheck = getChecker_Interact(4)
+            minRangeCheck = checkers_Interact[4]
         else
-            minRangeCheck = getChecker_Interact(2)
+            minRangeCheck = checker_Interact[2]
         end
     end
 
