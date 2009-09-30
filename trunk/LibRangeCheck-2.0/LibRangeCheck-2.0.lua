@@ -581,6 +581,31 @@ local function getChecker(checkerList, range)
     end
 end
 
+local function null()
+end
+
+local function createSmartChecker(friendChecker, harmChecker, miscChecker)
+    miscChecker = miscChecker or null
+    friendChecker = friendChecker or miscChecker
+    harmChecker = harmChecker or miscChecker
+    return function(unit)
+        if not UnitExists(unit) then
+            return nil
+        end
+        if UnitIsDeadOrGhost(unit) then
+            return miscChecker(unit)
+        end
+        if UnitCanAttack("player", unit) then
+            return harmChecker(unit)
+        elseif UnitCanAssist("player", unit) then
+            return friendChecker(unit)
+        else
+            return miscChecker(unit)
+        end
+    end
+end
+
+
 -- OK, here comes the actual lib
 
 -- pre-initialize the checkerLists here so that we can return some meaningful result even if
@@ -715,6 +740,11 @@ function lib:GetHarmCheckers()
     return rcIterator(self.harmRC)
 end
 
+--- Return an iterator for checkers usable on miscellaneous units as (**range**, **checker**) pairs.  These units are neither enemy nor friendly, such as people in sanctuaries or corpses.
+function lib:GetMiscCheckers()
+    return rcIterator(self.miscRC)
+end
+
 --- Return a checker suitable for out-of-range checking on friendly units, that is, a checker whose range is equal or larger than the requested range.
 -- @param range the range to check for.
 -- @return **checker**, **range** pair or **nil** if no suitable checker is available. **range** is the actual range the returned **checker** checks for.
@@ -727,6 +757,13 @@ end
 -- @return **checker**, **range** pair or **nil** if no suitable checker is available. **range** is the actual range the returned **checker** checks for.
 function lib:GetHarmMinChecker(range)
     return getMinChecker(self.harmRC, range)
+end
+
+--- Return a checker suitable for out-of-range checking on miscellaneous units, that is, a checker whose range is equal or larger than the requested range.
+-- @param range the range to check for.
+-- @return **checker**, **range** pair or **nil** if no suitable checker is available. **range** is the actual range the returned **checker** checks for.
+function lib:GetMiscMinChecker(range)
+    return getMinChecker(self.miscRC, range)
 end
 
 --- Return a checker suitable for in-range checking on friendly units, that is, a checker whose range is equal or smaller than the requested range.
@@ -743,6 +780,13 @@ function lib:GetHarmMaxChecker(range)
     return getMaxChecker(self.harmRC, range)
 end
 
+--- Return a checker suitable for in-range checking on miscellaneous units, that is, a checker whose range is equal or smaller than the requested range.
+-- @param range the range to check for.
+-- @return **checker**, **range** pair or **nil** if no suitable checker is available. **range** is the actual range the returned **checker** checks for.
+function lib:GetMiscMaxChecker(range)
+    return getMaxChecker(self.miscRC, range)
+end
+
 --- Return a checker for the given range for friendly units.
 -- @param range the range to check for.
 -- @return **checker** function or **nil** if no suitable checker is available.
@@ -755,6 +799,34 @@ end
 -- @return **checker** function or **nil** if no suitable checker is available.
 function lib:GetHarmChecker(range)
     return getChecker(self.harmRC, range)
+end
+
+--- Return a checker for the given range for miscellaneous units.
+-- @param range the range to check for.
+-- @return **checker** function or **nil** if no suitable checker is available.
+function lib:GetMiscChecker(range)
+    return getChecker(self.miscRC, range)
+end
+
+function lib:GetSmartMinChecker(range)
+    return createSmartChecker(
+        getMinChecker(self.friendRC, range),
+        getMinChecker(self.harmRC, range),
+        getMinChecker(self.miscRC, range))
+end
+
+function lib:GetSmartMaxChecker(range)
+    return createSmartChecker(
+        getMaxChecker(self.friendRC, range),
+        getMaxChecker(self.harmRC, range),
+        getMaxChecker(self.miscRC, range))
+end
+
+function lib:GetSmartChecker(range, fallback)
+    return createSmartChecer(
+        getChecker(self.friendRC, range) or fallback,
+        getChecker(self.harmRC, range) or fallback,
+        getChecker(self.miscRC, range) or fallback)
 end
 
 --- Get a range estimate as **minRange**, **maxRange**.
