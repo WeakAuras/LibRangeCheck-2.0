@@ -808,6 +808,9 @@ function lib:GetMiscChecker(range)
     return getChecker(self.miscRC, range)
 end
 
+--- Return a checker suitable for out-of-range checking that checks the unit type and calls the appropriate checker (friend/harm/misc).
+-- @param range the range to check for.
+-- @return **checker** function.
 function lib:GetSmartMinChecker(range)
     return createSmartChecker(
         getMinChecker(self.friendRC, range),
@@ -815,6 +818,9 @@ function lib:GetSmartMinChecker(range)
         getMinChecker(self.miscRC, range))
 end
 
+--- Return a checker suitable for in-of-range checking that checks the unit type and calls the appropriate checker (friend/harm/misc).
+-- @param range the range to check for.
+-- @return **checker** function.
 function lib:GetSmartMaxChecker(range)
     return createSmartChecker(
         getMaxChecker(self.friendRC, range),
@@ -822,6 +828,10 @@ function lib:GetSmartMaxChecker(range)
         getMaxChecker(self.miscRC, range))
 end
 
+--- Return a checker for the given range that checks the unit type and calls the appropriate checker (friend/harm/misc).
+-- @param range the range to check for.
+-- @param fallback optional fallback function that gets called as fallback(unit) if a checker is not available for the given type (friend/harm/misc) at the requested range. The default fallback function return nil.
+-- @return **checker** function.
 function lib:GetSmartChecker(range, fallback)
     return createSmartChecer(
         getChecker(self.friendRC, range) or fallback,
