@@ -34,6 +34,10 @@ License: Public Domain
 --     end
 -- end
 --
+-- local safeDistanceChecker = rc:GetHarmMinChecker(30)
+-- -- negate the result of the checker!
+-- local isSafelyAway = not safeDistanceChecker('target')
+--
 -- @class file
 -- @name LibRangeCheck-2.0
 local MAJOR_VERSION = "LibRangeCheck-2.0"
@@ -709,7 +713,7 @@ function lib:init(forced)
             -- for Taurens interact4 is actually closer than 25yd and interact2 is closer than 8yd, so we can't use that
             minRangeCheck = checkers_Interact[4]
         else
-            minRangeCheck = checker_Interact[2]
+            minRangeCheck = checkers_Interact[2]
         end
     end
 
@@ -833,7 +837,7 @@ end
 -- @param fallback optional fallback function that gets called as fallback(unit) if a checker is not available for the given type (friend/harm/misc) at the requested range. The default fallback function return nil.
 -- @return **checker** function.
 function lib:GetSmartChecker(range, fallback)
-    return createSmartChecer(
+    return createSmartChecker(
         getChecker(self.friendRC, range) or fallback,
         getChecker(self.harmRC, range) or fallback,
         getChecker(self.miscRC, range) or fallback)
