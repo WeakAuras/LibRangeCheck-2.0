@@ -878,7 +878,7 @@ lib.getRange = lib.GetRange
 -- >> Public API
 
 function lib:OnEvent(event, ...)
-    -- print("### Event: " .. tostring(event))
+    print("### Event: " .. tostring(event))
     if type(self[event]) == 'function' then
         self[event](self, event, ...)
     end
@@ -896,6 +896,10 @@ function lib:PLAYER_TALENT_UPDATE()
     self:init(true)
 end
 
+function lib:ACTIVE_TALENT_GROUP_CHANGED()
+    self:init(true)
+end
+
 function lib:GLYPH_ADDED()
     self:init(true)
 end
@@ -906,6 +910,12 @@ end
 
 function lib:GLYPH_UPDATED()
     self:init(true)
+end
+
+function lib:INSPECT_TALENT_READY()
+    self:init(true)
+    ClearInspectPlayer()
+    self.frame:UnregisterEvent("INSPECT_TALENT_READY")
 end
 
 function lib:UNIT_INVENTORY_CHANGED(event, unit)
@@ -1170,6 +1180,9 @@ function lib:activate()
         frame:RegisterEvent("GLYPH_ADDED")
         frame:RegisterEvent("GLYPH_REMOVED")
         frame:RegisterEvent("GLYPH_UPDATED")
+        frame:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED") -- ### necessary?
+        frame:RegisterEvent("INSPECT_TALENT_READY") -- ### test
+        NotifyInspect("player") -- ### test
         local _, playerClass = UnitClass("player")
         if playerClass == "MAGE" or playerClass == "SHAMAN" then
             -- Mage and Shaman gladiator gloves modify spell ranges
