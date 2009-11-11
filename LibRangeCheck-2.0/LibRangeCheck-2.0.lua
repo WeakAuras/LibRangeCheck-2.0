@@ -319,7 +319,6 @@ end
 
 local setmetatable = setmetatable
 local tonumber = tonumber
-local ipairs = ipairs
 local pairs = pairs
 local tostring = tostring
 local print = print
@@ -447,7 +446,8 @@ end
 -- minRange should be nil if there's no minRange, not 0
 local function addChecker(t, range, minRange, checker)
     local rc = { ["range"] = range, ["minRange"] = minRange, ["checker"] = checker }
-    for i, v in ipairs(t) do
+    for i = 1, #t do
+        local v = t[i]
         if rc.range == v.range then return end
         if rc.range > v.range then
             tinsert(t, i, rc)
@@ -460,7 +460,8 @@ end
 local function createCheckerList(spellList, itemList, interactList)
     local res = {}
     if spellList then
-        for i, sid in ipairs(spellList) do
+        for i = 1, #spellList do
+            local sid = spellList[i]
             local name, _, _, _, _, _, _, minRange, range = GetSpellInfo(sid)
             local spellIdx = findSpellIdx(name)
             if spellIdx and range then
@@ -484,7 +485,8 @@ local function createCheckerList(spellList, itemList, interactList)
     
     if itemList then
         for range, items in pairs(itemList) do
-            for i, item in ipairs(items) do
+            for i = 1, #items do
+                local item = items[i]
                 if GetItemInfo(item) then
                     addChecker(res, range, nil, checkers_Item[item])
                     break
@@ -560,7 +562,8 @@ end
 
 local function getMinChecker(checkerList, range)
     local checker, checkerRange
-    for _, rc in ipairs(checkerList) do
+    for i = 1, #checkerList do
+        local rc = checkerList[i]
         if rc.range < range then
             return checker, checkerRange
         end
@@ -570,7 +573,8 @@ local function getMinChecker(checkerList, range)
 end
 
 local function getMaxChecker(checkerList, range)
-    for _, rc in ipairs(checkerList) do
+    for i = 1, #checkerList do
+        local rc = checkerList[i]
         if rc.range <= range then
             return rc.checker, rc.range
         end
@@ -578,7 +582,8 @@ local function getMaxChecker(checkerList, range)
 end
 
 local function getChecker(checkerList, range)
-    for _, rc in ipairs(checkerList) do
+    for i = 1, #checkerList do
+        local rc = checkerList[i]
         if rc.range == range then
             return rc.checker
         end
@@ -675,7 +680,8 @@ function lib:init(forced)
     -- first try to find a nice item we can use for minRangeCheck
     if HarmItems[15] then
         local items = HarmItems[15]
-        for _, item in ipairs(items) do
+        for i = 1, #items do
+            local item = items[i]
             if GetItemInfo(item) then
                 minRangeCheck = function(unit)
                     return (IsItemInRange(item, unit) == 1)
@@ -1018,7 +1024,8 @@ function lib:startMeasurement(unit, resultTable)
     end
     self.spellsToMeasure = {}
     if spellList then
-        for _, sid in ipairs(spellList) do
+        for i = 1, #spellList do
+            local sid = spellList[i]
             local name = GetSpellInfo(sid)
             local spellIdx = findSpellIdx(name)
             if spellIdx then
@@ -1045,7 +1052,8 @@ end
 function lib:checkItems(itemList, verbose)
     if not itemList then return end
     for range, items in pairsByKeys(itemList) do
-        for _, item in ipairs(items) do
+        for i = 1, #items do
+            local item = items[i]
             local name = GetItemInfo(item)
             if not name then
                 print(MAJOR_VERSION .. ": " .. tostring(item) .. ": " .. tostring(range) .. "yd: |cffeda500not in cache|r")
@@ -1062,7 +1070,8 @@ end
 
 function lib:checkSpells(spellList, verbose)
     if not spellList then return end
-    for i, sid in ipairs(spellList) do
+    for i = 1, #spellList do 
+        local sid = spellList[i]
         local name, _, _, _, _, _, _, minRange, range = GetSpellInfo(sid)
         if (not name) or (not range) then
             print(MAJOR_VERSION .. ": " .. tostring(sid) .. ": " .. tostring(range) .. "yd: |cffeda500invalid spell id|r")
