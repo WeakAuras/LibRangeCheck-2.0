@@ -43,10 +43,12 @@ License: Public Domain
 local MAJOR_VERSION = "LibRangeCheck-2.0"
 local MINOR_VERSION = tonumber(("$Revision$"):match("%d+")) + 100000
 
-local lib = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
+local lib, oldminor = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
 if not lib then
+    print("### LibRangeCheck-2.0-r" .. tostring(MINOR_VERSION) .. ": already registered")
     return
 end
+print("### LibRangeCheck-2.0-r" .. tostring(MINOR_VERSION) .. ": loading, old minor: " .. tostring(oldminor))
 
 -- << STATIC CONFIG
 
@@ -672,6 +674,7 @@ end
 -- initialize RangeCheck if not yet initialized or if "forced"
 function lib:init(forced)
     if self.initialized and (not forced) then return end
+    print("### init(" .. (forced and "forced" or "") .. ")");
     self.initialized = true
     local _, playerClass = UnitClass("player")
     local _, playerRace = UnitRace("player")
@@ -885,42 +888,36 @@ function lib:OnEvent(event, ...)
 end
 
 function lib:LEARNED_SPELL_IN_TAB()
-    self:init(true)
+    self:scheduleInit()
 end
 
 function lib:CHARACTER_POINTS_CHANGED()
-    self:init(true)
+    self:scheduleInit()
 end
 
 function lib:PLAYER_TALENT_UPDATE()
-    self:init(true)
+    self:scheduleInit()
 end
 
 function lib:ACTIVE_TALENT_GROUP_CHANGED()
-    self:init(true)
+    self:scheduleInit()
 end
 
 function lib:GLYPH_ADDED()
-    self:init(true)
+    self:scheduleInit()
 end
 
 function lib:GLYPH_REMOVED()
-    self:init(true)
+    self:scheduleInit()
 end
 
 function lib:GLYPH_UPDATED()
-    self:init(true)
-end
-
-function lib:INSPECT_TALENT_READY()
-    self:init(true)
-    ClearInspectPlayer()
-    self.frame:UnregisterEvent("INSPECT_TALENT_READY")
+    self:scheduleInit()
 end
 
 function lib:UNIT_INVENTORY_CHANGED(event, unit)
     if self.initialized and unit == "player" and self.handSlotItem ~= GetInventoryItemLink("player", HandSlotId) then
-        self:init(true)
+        self:scheduleInit()
     end
 end
 
@@ -981,8 +978,12 @@ function lib:initialOnUpdate()
         print(MAJOR_VERSION .. ": finished cache")
         cacheAllItems = nil
     end
-    self.frame:SetScript("OnUpdate", nil)
     self.frame:Hide()
+end
+
+function lib:scheduleInit()
+    self.initialized = nil
+    self.frame:Show()
 end
 
 --@do-not-package@
@@ -1011,7 +1012,6 @@ function lib:cacheAllItems()
     end
     print(MAJOR_VERSION .. ": starting item cache")
     initItemRequests(true)
-    self.frame:SetScript("OnUpdate", function(frame, elapsed) self:initialOnUpdate() end)
     self.frame:Show()
 end
 
@@ -1055,7 +1055,7 @@ end
 function lib:stopMeasurement()
     print(MAJOR_VERSION .. ": stopping measurements")
     self.frame:Hide()
-    self.frame:SetScript("OnUpdate", nil)
+    self.frame:SetScript("OnUpdate", function(frame, ...) self:initialOnUpdate() end)
     self.measurements = nil
 end
 
@@ -1181,18 +1181,16 @@ function lib:activate()
         frame:RegisterEvent("GLYPH_REMOVED")
         frame:RegisterEvent("GLYPH_UPDATED")
         frame:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED") -- ### necessary?
-        frame:RegisterEvent("INSPECT_TALENT_READY") -- ### test
-        NotifyInspect("player") -- ### test
         local _, playerClass = UnitClass("player")
         if playerClass == "MAGE" or playerClass == "SHAMAN" then
             -- Mage and Shaman gladiator gloves modify spell ranges
             frame:RegisterEvent("UNIT_INVENTORY_CHANGED")
         end
     end
-    self.initialized = nil
     initItemRequests()
     self.frame:SetScript("OnEvent", function(frame, ...) self:OnEvent(...) end)
     self.frame:SetScript("OnUpdate", function(frame, ...) self:initialOnUpdate() end)
+    self:scheduleInit()
 end
 
 --- BEGIN CallbackHandler stuff
