@@ -45,13 +45,12 @@ local MINOR_VERSION = tonumber(("$Revision$"):match("%d+")) + 100000
 
 local lib, oldminor = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
 if not lib then
-    print("### LibRangeCheck-2.0-r" .. tostring(MINOR_VERSION) .. ": already registered")
     return
 end
-print("### LibRangeCheck-2.0-r" .. tostring(MINOR_VERSION) .. ": loading, old minor: " .. tostring(oldminor))
 
 -- << STATIC CONFIG
 
+local UpdateDelay = .5
 local ItemRequestTimeout = 10.0
 
 -- interact distance based checks. ranges are based on my own measurements (thanks for all the folks who helped me with this)
@@ -354,6 +353,7 @@ local foundNewItems
 local cacheAllItems
 local friendItemRequests
 local harmItemRequests
+local lastUpdate = 0
 
 -- minRangeCheck is a function to check if spells with minimum range are really out of range, or fail due to range < minRange. See :init() for its setup
 local minRangeCheck = function(unit) return CheckInteractDistance(unit, 2) end
@@ -674,7 +674,6 @@ end
 -- initialize RangeCheck if not yet initialized or if "forced"
 function lib:init(forced)
     if self.initialized and (not forced) then return end
-    print("### init(" .. (forced and "forced" or "") .. ")");
     self.initialized = true
     local _, playerClass = UnitClass("player")
     local _, playerRace = UnitRace("player")
@@ -881,7 +880,6 @@ lib.getRange = lib.GetRange
 -- >> Public API
 
 function lib:OnEvent(event, ...)
-    print("### Event: " .. tostring(event))
     if type(self[event]) == 'function' then
         self[event](self, event, ...)
     end
@@ -896,10 +894,6 @@ function lib:CHARACTER_POINTS_CHANGED()
 end
 
 function lib:PLAYER_TALENT_UPDATE()
-    self:scheduleInit()
-end
-
-function lib:ACTIVE_TALENT_GROUP_CHANGED()
     self:scheduleInit()
 end
 
@@ -983,6 +977,7 @@ end
 
 function lib:scheduleInit()
     self.initialized = nil
+    lastUpdate = 0
     self.frame:Show()
 end
 
@@ -1055,7 +1050,14 @@ end
 function lib:stopMeasurement()
     print(MAJOR_VERSION .. ": stopping measurements")
     self.frame:Hide()
-    self.frame:SetScript("OnUpdate", function(frame, ...) self:initialOnUpdate() end)
+    self.frame:SetScript("OnUpdate", function(frame, elapsed)
+        lastUpdate = lastUpdate + elapsed
+        if lastUpdate < UpdateDelay then
+            return
+        end
+        lastUpdate = 0
+        self:initialOnUpdate()
+    end)
     self.measurements = nil
 end
 
@@ -1180,7 +1182,6 @@ function lib:activate()
         frame:RegisterEvent("GLYPH_ADDED")
         frame:RegisterEvent("GLYPH_REMOVED")
         frame:RegisterEvent("GLYPH_UPDATED")
-        frame:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED") -- ### necessary?
         local _, playerClass = UnitClass("player")
         if playerClass == "MAGE" or playerClass == "SHAMAN" then
             -- Mage and Shaman gladiator gloves modify spell ranges
@@ -1189,7 +1190,14 @@ function lib:activate()
     end
     initItemRequests()
     self.frame:SetScript("OnEvent", function(frame, ...) self:OnEvent(...) end)
-    self.frame:SetScript("OnUpdate", function(frame, ...) self:initialOnUpdate() end)
+    self.frame:SetScript("OnUpdate", function(frame, elapsed)
+        lastUpdate = lastUpdate + elapsed
+        if lastUpdate < UpdateDelay then
+            return
+        end
+        lastUpdate = 0
+        self:initialOnUpdate()
+    end)
     self:scheduleInit()
 end
 
