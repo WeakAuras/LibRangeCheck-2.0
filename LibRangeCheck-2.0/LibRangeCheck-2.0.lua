@@ -83,14 +83,16 @@ local HarmSpells = {}
 
 FriendSpells["DRUID"] = {
     5185, -- ["Healing Touch"], -- 40
-    467, -- ["Thorns"], -- 30 (Nature's Reach: 33, 36)
-    1126, -- ["Mark of the Wild"], -- 30
+    467, -- ["Thorns"], -- 30
 }
 HarmSpells["DRUID"] = {
+    5176, -- ["Wrath"], -- 40
+    770, -- ["Faerie Fire"] -- 35 (Glyph of Faerie Fire: +10)
+    339, -- ["Entangling Roots"], -- 35
+    6795, -- ["Growl"], -- 30
     16979, -- ["Feral Charge"], -- 8-25
-    5176, -- ["Wrath"], -- 30 (Nature's Reach: 33, 36)
-    33786, -- ["Cyclone"], -- 20 (Nature's Reach: 22, 24; Gale Winds: +10/20%)
-    6795, -- ["Growl"], -- 20
+    33786, -- ["Cyclone"], -- 20 (Gale Winds: 22, 24)
+    80964, -- ["Skull Bash"] -- 13
     5211, -- ["Bash"], -- 5
 }
 
