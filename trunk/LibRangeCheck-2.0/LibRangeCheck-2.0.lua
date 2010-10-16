@@ -185,12 +185,13 @@ HarmSpells["WARLOCK"] = {
 }
 
 FriendSpells["DEATHKNIGHT"] = {
+    49016, -- ["Unholy Frenzy"], -- 30
 }
 HarmSpells["DEATHKNIGHT"] = {
+    77606, -- ["Dark Simulacrum"], -- 40
     47541, -- ["Death Coil"], -- 30
-    47476, -- ["Strangulate"], -- 30 (Glyph of Strangulate: +20)
-    45477, -- ["Icy Touch"], -- 20 (Icy Reach: 25, 30)
-    56222, -- ["Dark Command"], -- 20
+    49576, -- ["Death Grip"], -- 30 (Glyph of Death Grip: +5)
+    45477, -- ["Icy Touch"], -- 20 (Icy Reach: +5, +10)
     50842, -- ["Pestilence"], -- 5
     45902, -- ["Blood Strike"], -- 5, but requires weapon, use Pestilence if possible, so keep it after Pestilence in this list
 }
