@@ -144,9 +144,11 @@ HarmSpells["PRIEST"] = {
 
 FriendSpells["ROGUE"] = {}
 HarmSpells["ROGUE"] = {
-    2764, -- ["Throw"], -- 30
-    26679, -- ["Deadly Throw"], -- 30 (Glyph of Deadly Throw: +5)
-    2094, -- ["Blind"], -- 10 (Dirty Tricks: 12, 15)
+    2764, -- ["Throw"], -- 30 (Throwing Specialization: +5, +10)
+    3018, -- ["Shoot"], -- 30
+    2094, -- ["Blind"], -- 15
+--    8676, -- ["Ambush"], -- 5 (Glyph of Ambush: +5)
+--    921, -- ["Pick Pocket"], -- 5 (Glyph of Pick Pocket: + 5)
     2098, -- ["Eviscerate"], -- 5
 }
 
