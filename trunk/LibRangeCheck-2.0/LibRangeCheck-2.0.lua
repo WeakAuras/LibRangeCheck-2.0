@@ -154,14 +154,13 @@ HarmSpells["ROGUE"] = {
 
 FriendSpells["SHAMAN"] = {
     331, -- ["Healing Wave"], -- 40
-    526, -- ["Cure Poison"], -- 30
+    546, -- ["Water Walking"], -- 30
 }
 HarmSpells["SHAMAN"] = {
-    403, -- ["Lightning Bolt"], -- 30 (Storm Reach: 33, 36)
+    403, -- ["Lightning Bolt"], -- 30 (Elemental Reach: +5)
     370, -- ["Purge"], -- 30
-    8050, -- ["Flame Shock"], -- 20 (Elemental Reach: 27, 35; Gladiator Gloves: +5)
---    8042, -- ["Earth Shock"], -- 20 (Storm, Earth and Fire: 21-25; Gladiator Gloves: +5)
-    8056, -- ["Frost Shock"], -- 20 (Gladiator Gloves: +5)
+    8042, -- ["Earth Shock"], -- 25 (Elemental Reach: +7; Gladiator Gloves: +5)
+    73899, -- ["Primal Strike"],. -- 5
 }
 
 FriendSpells["WARRIOR"] = {}
