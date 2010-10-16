@@ -344,7 +344,6 @@ local UnitRace = UnitRace
 local GetInventoryItemLink = GetInventoryItemLink
 local GetTime = GetTime
 local HandSlotId = GetInventorySlotInfo("HandsSlot")
-local TT = ItemRefTooltip
 
 -- temporary stuff
 
@@ -426,11 +425,6 @@ local function initItemRequests(cacheAll)
     harmItemRequests = copyTable(HarmItems)
     cacheAllItems = cacheAll
     foundNewItems = nil
-end
-
-local function requestItemInfo(itemId)
-    if not itemId then return end
-    TT:SetHyperlink(string.format("item:%d", itemId))
 end
 
 -- return the spellIndex of the given spell by scanning the spellbook
@@ -937,7 +931,6 @@ function lib:processItemRequests(itemRequests)
                 end
                 tremove(items, i)   
             elseif not itemRequestTimeoutAt then
-                requestItemInfo(item)
                 itemRequestTimeoutAt = GetTime() + ItemRequestTimeout
                 return true
             elseif GetTime() > itemRequestTimeoutAt then
