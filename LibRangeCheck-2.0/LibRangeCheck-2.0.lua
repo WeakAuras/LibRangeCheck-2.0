@@ -165,12 +165,13 @@ HarmSpells["SHAMAN"] = {
 
 FriendSpells["WARRIOR"] = {}
 HarmSpells["WARRIOR"] = {
-    100, -- ["Charge"], -- 8-25 (Glyph of Charge: +5)
     3018, -- ["Shoot"], -- 30
     2764, -- ["Throw"], -- 30
     355, -- ["Taunt"], -- 30
+    100, -- ["Charge"], -- 8-25 (Glyph of Long Charge: +5)
+    20252, -- ["Intercept"], -- 8-25
     5246, -- ["Intimidating Shout"], -- 8
-    772, -- ["Rend"], -- 5
+    88161, -- ["Strike"], -- 5
 }
 
 FriendSpells["WARLOCK"] = {
@@ -180,7 +181,7 @@ HarmSpells["WARLOCK"] = {
     348, -- ["Immolate"], -- 40
     27243, -- ["Seed of Corruption"], -- 35
     5019, -- ["Shoot"], -- 30
-    18223, -- ["Curse of Exhaustion"], -- 30 (Glyph of Curse of Exhaustion: +5)
+    18223, -- ["Curse of Exhaustion"], -- 30 (Glyph of Exhaustion: +5)
 }
 
 FriendSpells["DEATHKNIGHT"] = {
