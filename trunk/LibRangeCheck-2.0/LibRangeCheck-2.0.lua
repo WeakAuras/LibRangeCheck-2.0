@@ -99,11 +99,13 @@ HarmSpells["DRUID"] = {
 FriendSpells["HUNTER"] = {}
 HarmSpells["HUNTER"] = {
     1130, -- ["Hunter's Mark"] -- 100
-    53351, -- ["Kill Shot"] -- 5-45 (Hawk Eye: 47, 49, 51)
-    75, -- ["Auto Shot"], -- 5-35 (Hawk Eye: 37, 39, 41)
+    53351, -- ["Kill Shot"] -- 45
+    75, -- ["Auto Shot"], -- 40
+    19801, -- ["Tranquilizing Shot"] -- 35
+    34490, -- ["Silencing Shot"] -- 35
     2764, -- ["Throw"], -- 30
-    19503, -- ["Scatter Shot"], -- 15 (Hawk Eye: 17, 19, 21; Glyph of Scatter Shot: +3)
-    2974, -- ["Wing Clip"], -- 5
+    19503, -- ["Scatter Shot"], -- 20 (Glyph of Scatter Shot: +3)
+    2973, -- ["Raptor Strike"] -- 5
 }
 
 FriendSpells["MAGE"] = {
