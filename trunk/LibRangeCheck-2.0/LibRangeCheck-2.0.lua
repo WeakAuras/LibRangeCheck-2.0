@@ -174,15 +174,13 @@ HarmSpells["WARRIOR"] = {
 }
 
 FriendSpells["WARLOCK"] = {
-    5697, -- ["Unending Breath"], -- 30 (demo)
+    5697, -- ["Unending Breath"], -- 30
 }
 HarmSpells["WARLOCK"] = {
+    348, -- ["Immolate"], -- 40
+    27243, -- ["Seed of Corruption"], -- 35
     5019, -- ["Shoot"], -- 30
-    348, -- ["Immolate"], -- 30 (Destructive Reach: 33, 36)
-    172, -- ["Corruption"], -- 30 (Grim Reach: 33, 36)
-    18223, -- ["Curse of Exhaustion"], -- 30 (Grim Reach: 33, 36, Glyph of Curse of Exhaustion: +5)
-    5782, -- ["Fear"], -- 20 (Grim Reach: 22, 24)
-    17877, -- ["Shadowburn"], -- 20 (Destructive Reach: 22, 24)
+    18223, -- ["Curse of Exhaustion"], -- 30 (Glyph of Curse of Exhaustion: +5)
 }
 
 FriendSpells["DEATHKNIGHT"] = {
