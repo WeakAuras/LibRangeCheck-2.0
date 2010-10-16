@@ -133,14 +133,13 @@ HarmSpells["PALADIN"] = {
 } 
 
 FriendSpells["PRIEST"] = {
-    2050, -- ["Lesser Heal"], -- 40
-    1243, -- ["Power Word: Fortitude"], -- 30
+    2061, -- ["Flash Heal"], -- 40
+    6346, -- ["Fear Ward"], -- 30
 }
 HarmSpells["PRIEST"] = {
-    585, -- ["Smite"], -- 30 (Holy Reach: 33, 36)
-    589, -- ["Shadow Word: Pain"], -- 30 (Shadow Reach: 33, 36)
+    589, -- ["Shadow Word: Pain"], -- 40
+    48045, -- ["Mind Sear"], -- 35
     5019, -- ["Shoot"], -- 30
-    15407, -- ["Mind Flay"], -- 20 (Shadow Reach: 22, 24, Glyph of Mind Flay: +10)
 }
 
 FriendSpells["ROGUE"] = {}
