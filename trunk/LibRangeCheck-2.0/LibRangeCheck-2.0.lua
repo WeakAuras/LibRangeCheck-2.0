@@ -122,12 +122,11 @@ HarmSpells["MAGE"] = {
 FriendSpells["PALADIN"] = {
     635, -- ["Holy Light"], -- 40
     20217, -- ["Blessing of Kings"], -- 30
-    20473, -- ["Holy Shock"], -- 20
 }
 HarmSpells["PALADIN"] = {
     62124, -- ["Hand of Reckoning"], -- 30
-    20473, -- ["Holy Shock"], -- 20
-    20271, -- ["Judgement"], -- 10 (Improved Judgement: +10, +20; Elnightened Judgements: +5, +10)
+--    20473, -- ["Holy Shock"], -- 20
+    20271, -- ["Judgement"], -- 10 (Improved Judgement: +10, +20; Enlightened Judgements: +5, +10)
     853, -- ["Hammer of Justice"], -- 10 (Glyph of Hammer of Justice: +5)
     35395, -- ["Crusader Strike"], -- 5
 } 
