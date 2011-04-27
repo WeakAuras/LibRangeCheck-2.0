@@ -1,4 +1,4 @@
-## Interface: 40000
+## Interface: 40100
 ## Title: Lib: RangeCheck-2.0
 ## Notes: A library to determine estimated range.
 ## Author: mitch0
