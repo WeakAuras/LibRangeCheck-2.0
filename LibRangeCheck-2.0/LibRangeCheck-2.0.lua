@@ -329,7 +329,9 @@ local tinsert = tinsert
 local tremove = tremove
 local BOOKTYPE_SPELL = BOOKTYPE_SPELL
 local GetSpellInfo = GetSpellInfo
-local GetSpellName = GetSpellName or GetSpellBookItemName
+local GetSpellBookItemName = GetSpellBookItemName
+local GetNumSpellTabs = GetNumSpellTabs
+local GetSpellTabInfo = GetSpellTabInfo
 local GetItemInfo = GetItemInfo
 local UnitCanAttack = UnitCanAttack
 local UnitCanAssist = UnitCanAssist
@@ -426,14 +428,16 @@ local function initItemRequests(cacheAll)
     foundNewItems = nil
 end
 
+local function getNumSpells()
+    local _, _, offset, numSpells = GetSpellTabInfo(GetNumSpellTabs())
+    return offset + numSpells
+end
+
 -- return the spellIndex of the given spell by scanning the spellbook
 local function findSpellIdx(spellName)
-    local i = 1
-    while true do
-        local spell, rank = GetSpellName(i, BOOKTYPE_SPELL)
-        if not spell then return nil end
+    for i = 1, getNumSpells() do
+        local spell, rank = GetSpellBookItemName(i, BOOKTYPE_SPELL)
         if spell == spellName then return i end
-        i = i + 1
     end
     return nil
 end
