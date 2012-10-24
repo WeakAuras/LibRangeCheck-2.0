@@ -294,7 +294,8 @@ local HarmItems = {
         28767, -- The Decapitator
     },
     [45] = {
-        32698, -- Wrangling Rope
+--        32698, -- Wrangling Rope
+        23836, -- Goblin Rocket Launcher
     },
     [60] = {
         32825, -- Soul Cannon
