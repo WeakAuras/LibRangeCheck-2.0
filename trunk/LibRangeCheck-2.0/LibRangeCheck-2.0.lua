@@ -907,6 +907,10 @@ function lib:GLYPH_UPDATED()
     self:scheduleInit()
 end
 
+function lib:SPELLS_CHANGED()
+    self:scheduleInit()
+end
+
 function lib:UNIT_INVENTORY_CHANGED(event, unit)
     if self.initialized and unit == "player" and self.handSlotItem ~= GetInventoryItemLink("player", HandSlotId) then
         self:scheduleInit()
@@ -1179,6 +1183,7 @@ function lib:activate()
         frame:RegisterEvent("GLYPH_ADDED")
         frame:RegisterEvent("GLYPH_REMOVED")
         frame:RegisterEvent("GLYPH_UPDATED")
+        frame:RegisterEvent("SPELLS_CHANGED")
         local _, playerClass = UnitClass("player")
         if playerClass == "MAGE" or playerClass == "SHAMAN" then
             -- Mage and Shaman gladiator gloves modify spell ranges
