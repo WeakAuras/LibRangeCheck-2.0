@@ -90,7 +90,7 @@ HarmSpells["DRUID"] = {
     770, -- ["Faerie Fire"] -- 35 (Glyph of Faerie Fire: +10)
     339, -- ["Entangling Roots"], -- 35
     6795, -- ["Growl"], -- 30
-    16979, -- ["Feral Charge"], -- 8-25
+--    16979, -- ["Feral Charge"], -- 8-25
     33786, -- ["Cyclone"], -- 20 (Gale Winds: 22, 24)
     80964, -- ["Skull Bash"] -- 13
     5211, -- ["Bash"], -- 5
