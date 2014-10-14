@@ -344,27 +344,8 @@ local IsItemInRange = IsItemInRange
 local UnitClass = UnitClass
 local UnitRace = UnitRace
 local GetInventoryItemLink = GetInventoryItemLink
-local UnitDistanceSquared = UnitDistanceSquared
 local GetTime = GetTime
 local HandSlotId = GetInventorySlotInfo("HandsSlot")
-
-local wow_600 = select(4, GetBuildInfo()) >= 60000
-
--- This is here because in WoD, functions that previously returned 1/nil now return true false.
--- The range checking functions are different - they can return 1/0/nil, so 
--- Gratuitous Overuse of Explicit Checks on Boolean Values (tm Phanx) is actually needed.
--- In WoD, they return true/false/nil, so we could change each line to have a simple if..then check,
--- but that would break backwards compatibility. So instead, we do it like this:
-
--- Currently, IsSpellInRange still returns 1/0/nil, but IsItemInRange uses true/false/nil,
--- so this is only used for IsItemInRange
-local IN_RANGE_RETURN_VAL
-if wow_600 then
-    IN_RANGE_RETURN_VAL = true
-else
-    IN_RANGE_RETURN_VAL = 1
-end
-
 
 -- temporary stuff
 
@@ -405,7 +386,7 @@ local checkers_SpellWithMin = setmetatable({}, {
 local checkers_Item = setmetatable({}, {
     __index = function(t, item)
         local func = function(unit)
-            if IsItemInRange(item, unit) == IN_RANGE_RETURN_VAL then
+            if IsItemInRange(item, unit) == 1 then
                  return true
             end
         end
@@ -481,14 +462,7 @@ local function createCheckerList(spellList, itemList, interactList)
     if spellList then
         for i = 1, #spellList do
             local sid = spellList[i]
-
-            local name, minRange, range, _
-            if wow_600 then
-                name, _, _, _, minRange, range = GetSpellInfo(sid)
-            else
-                name, _, _, _, _, _, _, minRange, range = GetSpellInfo(sid)
-            end
-
+            local name, _, _, _, _, _, _, minRange, range = GetSpellInfo(sid)
             local spellIdx = findSpellIdx(name)
             if spellIdx and range then
                 minRange = math.floor(minRange + 0.5)
@@ -532,14 +506,6 @@ end
 
 -- returns minRange, maxRange  or nil
 local function getRange(unit, checkerList)
-    if wow_600 then
-        local dist, canCheck = UnitDistanceSquared(unit)
-        if canCheck then
-            dist = sqrt(dist)
-            return floor(dist), ceil(dist)
-        end
-    end
-
     local min, max = 0, nil
     for i = 1, #checkerList do
         local rc = checkerList[i]
@@ -718,7 +684,7 @@ function lib:init(forced)
             local item = items[i]
             if GetItemInfo(item) then
                 minRangeCheck = function(unit)
-                    return IsItemInRange(item, unit) == IN_RANGE_RETURN_VAL
+                    return (IsItemInRange(item, unit) == 1)
                 end
                 break
             end
