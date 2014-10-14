@@ -386,9 +386,7 @@ local checkers_SpellWithMin = setmetatable({}, {
 local checkers_Item = setmetatable({}, {
     __index = function(t, item)
         local func = function(unit)
-            if IsItemInRange(item, unit) == 1 then
-                 return true
-            end
+            return IsItemInRange(item, unit)
         end
         t[item] = func
         return func
@@ -436,6 +434,9 @@ end
 
 -- return the spellIndex of the given spell by scanning the spellbook
 local function findSpellIdx(spellName)
+    if not spellName or spellName == "" then
+        return nil
+    end
     for i = 1, getNumSpells() do
         local spell, rank = GetSpellBookItemName(i, BOOKTYPE_SPELL)
         if spell == spellName then return i end
@@ -462,7 +463,7 @@ local function createCheckerList(spellList, itemList, interactList)
     if spellList then
         for i = 1, #spellList do
             local sid = spellList[i]
-            local name, _, _, _, _, _, _, minRange, range = GetSpellInfo(sid)
+            local name, _, _, _, minRange, range = GetSpellInfo(sid)
             local spellIdx = findSpellIdx(name)
             if spellIdx and range then
                 minRange = math.floor(minRange + 0.5)
@@ -653,7 +654,6 @@ function lib:findSpellIndex(spell)
     if type(spell) == 'number' then
         spell = GetSpellInfo(spell)
     end
-    if not spell then return nil end
     return findSpellIdx(spell)
 end
 
@@ -684,7 +684,7 @@ function lib:init(forced)
             local item = items[i]
             if GetItemInfo(item) then
                 minRangeCheck = function(unit)
-                    return (IsItemInRange(item, unit) == 1)
+                    return IsItemInRange(item, unit)
                 end
                 break
             end
@@ -1085,8 +1085,8 @@ function lib:checkSpells(spellList, verbose)
     if not spellList then return end
     for i = 1, #spellList do 
         local sid = spellList[i]
-        local name, _, _, _, _, _, _, minRange, range = GetSpellInfo(sid)
-        if (not name) or (not range) then
+        local name, _, _, _, minRange, range = GetSpellInfo(sid)
+        if (not name) or (name == "") or (not range) then
             print(MAJOR_VERSION .. ": " .. tostring(sid) .. ": " .. tostring(range) .. "yd: |cffeda500invalid spell id|r")
         else
             local spellIdx = self:findSpellIndex(sid)
