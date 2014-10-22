@@ -191,8 +191,7 @@ HarmSpells["DEATHKNIGHT"] = {
     47541, -- ["Death Coil"], -- 30
     49576, -- ["Death Grip"], -- 30 (Glyph of Death Grip: +5)
     45477, -- ["Icy Touch"], -- 20 (Icy Reach: +5, +10)
-    50842, -- ["Pestilence"], -- 5
-    45902, -- ["Blood Strike"], -- 5, but requires weapon, use Pestilence if possible, so keep it after Pestilence in this list
+    45462, -- ["Plague Strike"], -- 5, but requires weapon
 }
 
 -- Items [Special thanks to Maldivia for the nice list]
