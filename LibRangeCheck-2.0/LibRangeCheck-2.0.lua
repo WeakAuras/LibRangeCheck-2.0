@@ -184,6 +184,7 @@ HarmSpells["WARLOCK"] = {
 }
 
 FriendSpells["DEATHKNIGHT"] = {
+--    61999, -- ["Raise Ally"], -- 40
     49016, -- ["Unholy Frenzy"], -- 30
 }
 HarmSpells["DEATHKNIGHT"] = {
@@ -192,6 +193,15 @@ HarmSpells["DEATHKNIGHT"] = {
     49576, -- ["Death Grip"], -- 30 (Glyph of Death Grip: +5)
     45477, -- ["Icy Touch"], -- 20 (Icy Reach: +5, +10)
     45462, -- ["Plague Strike"], -- 5, but requires weapon
+}
+
+FriendSpells["MONK"] = {
+--    115178, -- ["Resuscitate"], -- 40
+}
+HarmSpells["MONK"] = {
+    115546, -- ["Provoke"], -- 40
+--    115078, -- ["Paralysis"], -- 20
+--    100780, -- ["Jab"], -- 5
 }
 
 -- Items [Special thanks to Maldivia for the nice list]
