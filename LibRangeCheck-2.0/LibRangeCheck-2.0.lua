@@ -194,7 +194,6 @@ HarmSpells["DEATHKNIGHT"] = {
 }
 
 FriendSpells["MONK"] = {
-    115178, -- ["Resuscitate"], -- 40
 }
 HarmSpells["MONK"] = {
     115546, -- ["Provoke"], -- 40
