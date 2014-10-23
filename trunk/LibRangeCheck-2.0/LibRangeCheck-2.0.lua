@@ -184,24 +184,22 @@ HarmSpells["WARLOCK"] = {
 }
 
 FriendSpells["DEATHKNIGHT"] = {
---    61999, -- ["Raise Ally"], -- 40
-    49016, -- ["Unholy Frenzy"], -- 30
 }
 HarmSpells["DEATHKNIGHT"] = {
     77606, -- ["Dark Simulacrum"], -- 40
     47541, -- ["Death Coil"], -- 30
     49576, -- ["Death Grip"], -- 30 (Glyph of Death Grip: +5)
     45477, -- ["Icy Touch"], -- 20 (Icy Reach: +5, +10)
-    45462, -- ["Plague Strike"], -- 5, but requires weapon
+    45462, -- ["Plague Strike"], -- 5
 }
 
 FriendSpells["MONK"] = {
---    115178, -- ["Resuscitate"], -- 40
+    115178, -- ["Resuscitate"], -- 40
 }
 HarmSpells["MONK"] = {
     115546, -- ["Provoke"], -- 40
---    115078, -- ["Paralysis"], -- 20
---    100780, -- ["Jab"], -- 5
+    115078, -- ["Paralysis"], -- 20
+    100780, -- ["Jab"], -- 5
 }
 
 -- Items [Special thanks to Maldivia for the nice list]
@@ -318,9 +316,6 @@ local HarmItems = {
 -- This could've been done by checking player race as well and creating tables for those, but it's easier like this
 for k, v in pairs(FriendSpells) do
     tinsert(v, 28880) -- ["Gift of the Naaru"]
-end
-for k, v in pairs(HarmSpells) do
-    tinsert(v, 28734) -- ["Mana Tap"]
 end
 
 -- >> END OF STATIC CONFIG
@@ -1119,6 +1114,14 @@ function lib:checkAllItems()
     self:checkItems(HarmItems, true)
 end
 
+function lib:checkAllSpells()
+    local _, playerClass = UnitClass("player")
+    print(MAJOR_VERSION .. ": Checking FriendSpells: " .. playerClass)
+    self:checkSpells(FriendSpells[playerClass], true)
+    print(MAJOR_VERSION .. ": Checking HarmSpells..." .. playerClass)
+    self:checkSpells(HarmSpells[playerClass], true)
+end
+
 function lib:checkAllCheckers()
     if not UnitExists("target") then
         print(MAJOR_VERSION .. ": Invalid unit, cannot check")
@@ -1126,7 +1129,7 @@ function lib:checkAllCheckers()
     end
     local _, playerClass = UnitClass("player")
     if UnitCanAttack("player", "target") then
-        print(MAJOR_VERSION .. ": Checking HarmCheckers: ")
+        print(MAJOR_VERSION .. ": Checking HarmCheckers: " .. playerClass)
         self:checkItems(HarmItems)
         self:checkSpells(HarmSpells[playerClass])
     elseif UnitCanAssist("player", "target") then
