@@ -337,6 +337,7 @@ local GetSpellBookItemName = GetSpellBookItemName
 local GetNumSpellTabs = GetNumSpellTabs
 local GetSpellTabInfo = GetSpellTabInfo
 local GetItemInfo = GetItemInfo
+local UnitAura = UnitAura
 local UnitCanAttack = UnitCanAttack
 local UnitCanAssist = UnitCanAssist
 local UnitExists = UnitExists
@@ -347,6 +348,8 @@ local IsItemInRange = IsItemInRange
 local UnitClass = UnitClass
 local UnitRace = UnitRace
 local GetInventoryItemLink = GetInventoryItemLink
+local GetSpecialization = GetSpecialization
+local GetSpecializationInfo = GetSpecializationInfo
 local GetTime = GetTime
 local HandSlotId = GetInventorySlotInfo("HandsSlot")
 
@@ -358,6 +361,9 @@ local cacheAllItems
 local friendItemRequests
 local harmItemRequests
 local lastUpdate = 0
+
+local sniperTrainingName
+local hasSniperTraining
 
 -- minRangeCheck is a function to check if spells with minimum range are really out of range, or fail due to range < minRange. See :init() for its setup
 local minRangeCheck = function(unit) return CheckInteractDistance(unit, 2) end
@@ -618,6 +624,22 @@ local function createSmartChecker(friendChecker, harmChecker, miscChecker)
     end
 end
 
+local function isMarksman()
+    local specIndex = GetSpecialization()
+    if specIndex then
+        return GetSpecializationInfo(specIndex) == 254
+    end
+end
+
+local function checkSniperTrainingChange()
+    if sniperTrainingName then
+        local hasSTNow = UnitAura("player", sniperTrainingName) and true
+        if hasSTNow ~= hasSniperTraining then
+            hasSniperTraining = hasSTNow
+            return true
+        end
+    end
+end
 
 -- OK, here comes the actual lib
 
@@ -674,10 +696,23 @@ end
 
 -- initialize RangeCheck if not yet initialized or if "forced"
 function lib:init(forced)
-    if self.initialized and (not forced) then return end
+    if self.initialized and (not forced) and (not checkSniperTrainingChange()) then
+        return
+    end
     self.initialized = true
     local _, playerClass = UnitClass("player")
     local _, playerRace = UnitRace("player")
+
+    if playerClass == "HUNTER" and isMarksman() then
+        if not sniperTrainingName then
+            sniperTrainingName = GetSpellInfo(168811)
+            checkSniperTrainingChange()
+            self.frame:RegisterUnitEvent("UNIT_AURA", "player")
+        end
+    else
+        self.frame:UnregisterEvent("UNIT_AURA")
+        sniperTrainingName = nil
+    end
 
     minRangeCheck = nil
     -- first try to find a nice item we can use for minRangeCheck
@@ -920,6 +955,12 @@ function lib:UNIT_INVENTORY_CHANGED(event, unit)
     end
 end
 
+function lib:UNIT_AURA(event, unit)
+    if self.initialized and unit == "player" then
+        self:scheduleAuraCheck()
+    end
+end
+
 function lib:processItemRequests(itemRequests)
     while true do
         local range, items = next(itemRequests)
@@ -982,6 +1023,11 @@ end
 function lib:scheduleInit()
     self.initialized = nil
     lastUpdate = 0
+    self.frame:Show()
+end
+
+function lib:scheduleAuraCheck()
+    lastUpdate = UpdateDelay
     self.frame:Show()
 end
 
@@ -1198,7 +1244,7 @@ function lib:activate()
         local _, playerClass = UnitClass("player")
         if playerClass == "MAGE" or playerClass == "SHAMAN" then
             -- Mage and Shaman gladiator gloves modify spell ranges
-            frame:RegisterEvent("UNIT_INVENTORY_CHANGED")
+            frame:RegisterUnitEvent("UNIT_INVENTORY_CHANGED", "player")
         end
     end
     initItemRequests()
