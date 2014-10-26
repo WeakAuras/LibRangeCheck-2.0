@@ -86,17 +86,16 @@ FriendSpells["DRUID"] = {
     1126, -- ["Mark of the Wild"], -- 30
 }
 HarmSpells["DRUID"] = {
-    164815, -- ["Sunfire"], -- 100
     5176, -- ["Wrath"], -- 40
     339, -- ["Entangling Roots"], -- 35
     6795, -- ["Growl"], -- 30
     33786, -- ["Cyclone"], -- 20
-    5211, -- ["Mighty Bash"], -- 5 -- ### CHECK Humanoid form!
+    22568, -- ["Ferocious Bite"], -- 5
 }
 
 FriendSpells["HUNTER"] = {}
 HarmSpells["HUNTER"] = {
-    53351, -- ["Kill Shot"], -- 45 -- ### CHECK Survival!
+    53351, -- ["Kill Shot"], -- 45
     75, -- ["Auto Shot"], -- 40
 }
 
@@ -111,7 +110,7 @@ HarmSpells["MAGE"] = {
 }
 
 FriendSpells["PALADIN"] = {
-    130552, -- ["Harsh Word"], -- 40
+    85673, -- ["Word of Glory"], -- 40
     20217, -- ["Blessing of Kings"], -- 30
 }
 HarmSpells["PALADIN"] = {
@@ -132,7 +131,6 @@ HarmSpells["PRIEST"] = {
 
 FriendSpells["ROGUE"] = {}
 HarmSpells["ROGUE"] = {
-    5171, -- ["Slice and Dice"], -- 100
     2764, -- ["Throw"], -- 30
     2094, -- ["Blind"], -- 15
     1752, -- ["Sinister Strike"], -- 5
@@ -166,6 +164,7 @@ HarmSpells["WARLOCK"] = {
 }
 
 FriendSpells["DEATHKNIGHT"] = {
+    47541, -- ["Death Coil"], -- 40
 }
 HarmSpells["DEATHKNIGHT"] = {
     47541, -- ["Death Coil"], -- 40
@@ -175,6 +174,7 @@ HarmSpells["DEATHKNIGHT"] = {
 }
 
 FriendSpells["MONK"] = {
+    115546, -- ["Provoke"], -- 40
 }
 HarmSpells["MONK"] = {
     115546, -- ["Provoke"], -- 40
