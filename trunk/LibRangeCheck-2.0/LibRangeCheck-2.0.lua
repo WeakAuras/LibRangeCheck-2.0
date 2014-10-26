@@ -82,30 +82,22 @@ local FriendSpells = {}
 local HarmSpells = {}
 
 FriendSpells["DRUID"] = {
-    5185, -- ["Healing Touch"], -- 40
-    467, -- ["Thorns"], -- 30
+    774, -- ["Rejuvenation"], -- 40
+    1126, -- ["Mark of the Wild"], -- 30
 }
 HarmSpells["DRUID"] = {
+    164815, -- ["Sunfire"], -- 100
     5176, -- ["Wrath"], -- 40
-    770, -- ["Faerie Fire"] -- 35 (Glyph of Faerie Fire: +10)
     339, -- ["Entangling Roots"], -- 35
     6795, -- ["Growl"], -- 30
---    16979, -- ["Feral Charge"], -- 8-25
-    33786, -- ["Cyclone"], -- 20 (Gale Winds: 22, 24)
-    80964, -- ["Skull Bash"] -- 13
-    5211, -- ["Bash"], -- 5
+    33786, -- ["Cyclone"], -- 20
+    5211, -- ["Mighty Bash"], -- 5 -- ### CHECK Humanoid form!
 }
 
 FriendSpells["HUNTER"] = {}
 HarmSpells["HUNTER"] = {
-    1130, -- ["Hunter's Mark"] -- 100
-    53351, -- ["Kill Shot"] -- 45
+    53351, -- ["Kill Shot"], -- 45 -- ### CHECK Survival!
     75, -- ["Auto Shot"], -- 40
-    19801, -- ["Tranquilizing Shot"] -- 35
-    34490, -- ["Silencing Shot"] -- 35
-    2764, -- ["Throw"], -- 30
-    19503, -- ["Scatter Shot"], -- 20 (Glyph of Scatter Shot: +3)
-    2973, -- ["Raptor Strike"] -- 5
 }
 
 FriendSpells["MAGE"] = {
@@ -113,21 +105,19 @@ FriendSpells["MAGE"] = {
     1459, -- ["Arcane Brilliance"], -- 30
 }
 HarmSpells["MAGE"] = {
-    133, -- ["Fireball"], -- 40
-    116, -- ["Frostbolt"], -- 35
-    30455, -- ["Ice Lance"], -- 35 (Ice Shards: +2, +5)
+    44614, --["Frostfire Bolt"], -- 40
+    2136, -- ["Fire Blast"], -- 30
     5019, -- ["Shoot"], -- 30
 }
 
 FriendSpells["PALADIN"] = {
-    635, -- ["Holy Light"], -- 40
+    130552, -- ["Harsh Word"], -- 40
     20217, -- ["Blessing of Kings"], -- 30
 }
 HarmSpells["PALADIN"] = {
-    62124, -- ["Hand of Reckoning"], -- 30
---    20473, -- ["Holy Shock"], -- 20
-    20271, -- ["Judgement"], -- 10 (Improved Judgement: +10, +20; Enlightened Judgements: +5, +10)
-    853, -- ["Hammer of Justice"], -- 10 (Glyph of Hammer of Justice: +5)
+    62124, -- ["Reckoning"], -- 30
+    20271, -- ["Judgement"], -- 30
+    853, -- ["Hammer of Justice"], -- 10
     35395, -- ["Crusader Strike"], -- 5
 } 
 
@@ -137,59 +127,50 @@ FriendSpells["PRIEST"] = {
 }
 HarmSpells["PRIEST"] = {
     589, -- ["Shadow Word: Pain"], -- 40
-    48045, -- ["Mind Sear"], -- 35
     5019, -- ["Shoot"], -- 30
 }
 
 FriendSpells["ROGUE"] = {}
 HarmSpells["ROGUE"] = {
-    2764, -- ["Throw"], -- 30 (Throwing Specialization: +5, +10)
-    3018, -- ["Shoot"], -- 30
+    5171, -- ["Slice and Dice"], -- 100
+    2764, -- ["Throw"], -- 30
     2094, -- ["Blind"], -- 15
---    8676, -- ["Ambush"], -- 5 (Glyph of Ambush: +5)
---    921, -- ["Pick Pocket"], -- 5 (Glyph of Pick Pocket: + 5)
-    2098, -- ["Eviscerate"], -- 5
+    1752, -- ["Sinister Strike"], -- 5
 }
 
 FriendSpells["SHAMAN"] = {
-    331, -- ["Healing Wave"], -- 40
+    8004, -- ["Healing Surge"], -- 40
     546, -- ["Water Walking"], -- 30
 }
 HarmSpells["SHAMAN"] = {
-    403, -- ["Lightning Bolt"], -- 30 (Elemental Reach: +5)
+    403, -- ["Lightning Bolt"], -- 30
     370, -- ["Purge"], -- 30
-    8042, -- ["Earth Shock"], -- 25 (Elemental Reach: +7; Gladiator Gloves: +5)
+    8050, -- ["Flame Shock"], -- 25
     73899, -- ["Primal Strike"],. -- 5
 }
 
 FriendSpells["WARRIOR"] = {}
 HarmSpells["WARRIOR"] = {
-    3018, -- ["Shoot"], -- 30
-    2764, -- ["Throw"], -- 30
     355, -- ["Taunt"], -- 30
-    100, -- ["Charge"], -- 8-25 (Glyph of Long Charge: +5)
-    20252, -- ["Intercept"], -- 8-25
+    100, -- ["Charge"], -- 8-25
     5246, -- ["Intimidating Shout"], -- 8
-    88161, -- ["Strike"], -- 5
+    78, -- ["Heroic Strike"], -- 5
 }
 
 FriendSpells["WARLOCK"] = {
     5697, -- ["Unending Breath"], -- 30
 }
 HarmSpells["WARLOCK"] = {
-    348, -- ["Immolate"], -- 40
-    27243, -- ["Seed of Corruption"], -- 35
+    686, -- ["Shadow Bolt"], -- 40
     5019, -- ["Shoot"], -- 30
-    18223, -- ["Curse of Exhaustion"], -- 30 (Glyph of Exhaustion: +5)
 }
 
 FriendSpells["DEATHKNIGHT"] = {
 }
 HarmSpells["DEATHKNIGHT"] = {
-    77606, -- ["Dark Simulacrum"], -- 40
-    47541, -- ["Death Coil"], -- 30
-    49576, -- ["Death Grip"], -- 30 (Glyph of Death Grip: +5)
-    45477, -- ["Icy Touch"], -- 20 (Icy Reach: +5, +10)
+    47541, -- ["Death Coil"], -- 40
+    49576, -- ["Death Grip"], -- 30
+    45477, -- ["Icy Touch"], -- 30
     45462, -- ["Plague Strike"], -- 5
 }
 
@@ -352,6 +333,7 @@ local GetSpecialization = GetSpecialization
 local GetSpecializationInfo = GetSpecializationInfo
 local GetTime = GetTime
 local HandSlotId = GetInventorySlotInfo("HandsSlot")
+local math_floor = math.floor
 
 -- temporary stuff
 
@@ -475,8 +457,8 @@ local function createCheckerList(spellList, itemList, interactList)
             local name, _, _, _, minRange, range = GetSpellInfo(sid)
             local spellIdx = findSpellIdx(name)
             if spellIdx and range then
-                minRange = math.floor(minRange + 0.5)
-                range = math.floor(range + 0.5)
+                minRange = math_floor(minRange + 0.5)
+                range = math_floor(range + 0.5)
                 -- print("### spell: " .. tostring(name) .. ", " .. tostring(minRange) .. " - " ..  tostring(range))
                 if minRange == 0 then -- getRange() expects minRange to be nil in this case
                     minRange = nil
