@@ -188,6 +188,9 @@ local FriendItems  = {
     [5] = {
         37727, -- Ruby Acorn
     },
+    [6] = {
+        63427, -- Worgsaw
+    },
     [8] = {
         34368, -- Attuned Crystal Cores
         33278, -- Burning Torch
@@ -237,9 +240,15 @@ local FriendItems  = {
     [45] = {
         32698, -- Wrangling Rope
     },
+    [50] = {
+        116139, -- Haunting Memento
+    },
     [60] = {
         32825, -- Soul Cannon
         37887, -- Seeds of Nature's Wrath
+    },
+    [70] = {
+        41265, -- Eyesore Blaster
     },
     [80] = {
         35278, -- Reinforced Net
@@ -249,6 +258,9 @@ local FriendItems  = {
 local HarmItems = {
     [5] = {
         37727, -- Ruby Acorn
+    },
+    [6] = {
+        63427, -- Worgsaw
     },
     [8] = {
         34368, -- Attuned Crystal Cores
@@ -284,12 +296,21 @@ local HarmItems = {
 --        32698, -- Wrangling Rope
         23836, -- Goblin Rocket Launcher
     },
+    [50] = {
+        116139, -- Haunting Memento
+    },
     [60] = {
         32825, -- Soul Cannon
         37887, -- Seeds of Nature's Wrath
     },
+    [70] = {
+        41265, -- Eyesore Blaster
+    },
     [80] = {
         35278, -- Reinforced Net
+    },
+    [100] = {
+        33119, -- Malister's Frost Wand
     },
 }
 
@@ -1054,10 +1075,13 @@ function lib:startMeasurement(unit, resultTable)
     print(MAJOR_VERSION .. ": starting measurements")
     local _, playerClass = UnitClass("player")
     local spellList
+    local itemList
     if UnitCanAttack("player", unit) then
         spellList = HarmSpells[playerClass]
+        itemList = HarmItems
     elseif UnitCanAssist("player", unit) then
         spellList = FriendSpells[playerClass]
+        itemList = FriendItems
     end
     self.spellsToMeasure = {}
     if spellList then
@@ -1067,6 +1091,18 @@ function lib:startMeasurement(unit, resultTable)
             local spellIdx = findSpellIdx(name)
             if spellIdx then
                 self.spellsToMeasure[name] = spellIdx
+            end
+        end
+    end
+    self.itemsToMeasure = {}
+    if itemList then
+        for range, items in pairs(itemList) do
+            for i = 1, #items do
+                local item = items[i]
+                local name = GetItemInfo(item)
+                if name then
+                    self.itemsToMeasure[name] = item
+                end
             end
         end
     end
@@ -1170,39 +1206,67 @@ function lib:checkAllCheckers()
     print(MAJOR_VERSION .. ": done.")
 end
 
+local function logMeasurementChange(t, t0, key, last, curr)
+    local d = 0
+    local scale = 1240
+    if t0 then
+        local dx = scale * (t.x - t0.x)
+        local dy = scale * (t.y - t0.y)
+        d = _G.sqrt(dx * dx + dy * dy)
+    end
+    print(MAJOR_VERSION .. ": t=" .. ("%.4f"):format(t.stamp) .. ": d=" .. ("%.4f"):format(d) .. ": " .. tostring(key) .. ": " .. tostring(last) .. " ->  " .. tostring(curr))
+end
+
 local GetPlayerMapPosition = GetPlayerMapPosition
 function lib:updateMeasurements()
     local now = GetTime() - self.measurementStart
     local x, y = GetPlayerMapPosition("player")
+    local t0 = self.measurements[0]
     local t = self.measurements[now]
     local unit = self.measurementUnit
     for name, id in pairs(self.spellsToMeasure) do
-        local last = self.lastMeasurements[name]
+        local key = 'spell: ' .. name
+        local last = self.lastMeasurements[key]
         local curr = (IsSpellInRange(id, BOOKTYPE_SPELL, unit) == 1) and true or false
         if last == nil or last ~= curr then
-            print(MAJOR_VERSION .. ": " .. tostring(name) .. ": " .. tostring(last) .. " ->  " .. tostring(curr))
             if not t then
                 t = {}
                 t.x, t.y, t.stamp, t.states = x, y, now, {}
                 self.measurements[now] = t
             end
-            t.states[name]= curr
-            self.lastMeasurements[name] = curr
+            logMeasurementChange(t, t0, key, last, curr)
+            t.states[key]= curr
+            self.lastMeasurements[key] = curr
+        end
+    end
+    for name, item in pairs(self.itemsToMeasure) do
+        local key = 'item: ' .. name;
+        local last = self.lastMeasurements[key]
+        local curr = IsItemInRange(item, unit) and true or false
+        if last == nil or last ~= curr then
+            if not t then
+                t = {}
+                t.x, t.y, t.stamp, t.states = x, y, now, {}
+                self.measurements[now] = t
+            end
+            logMeasurementChange(t, t0, key, last, curr)
+            t.states[key]= curr
+            self.lastMeasurements[key] = curr
         end
     end
     for i, v in pairs(DefaultInteractList) do
-        local name = "interact" .. i
-        local last = self.lastMeasurements[name]
+        local key = 'interact: ' .. i
+        local last = self.lastMeasurements[key]
         local curr = CheckInteractDistance(unit, i) and true or false
         if last == nil or last ~= curr then
-            print(MAJOR_VERSION .. ": " .. tostring(name) .. ": " .. tostring(last) .. " ->  " .. tostring(curr))
             if not t then
                 t = {}
                 t.x, t.y, t.stamp, t.states = x, y, now, {}
                 self.measurements[now] = t
             end
-            t.states[name] = curr
-            self.lastMeasurements[name] = curr
+            logMeasurementChange(t, t0, key, last, curr)
+            t.states[key] = curr
+            self.lastMeasurements[key] = curr
         end
     end
 end
