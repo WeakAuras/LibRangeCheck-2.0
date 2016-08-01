@@ -81,6 +81,20 @@ local FriendSpells = {}
 -- list of harmful spells that have different ranges 
 local HarmSpells = {}
 
+FriendSpells["DEATHKNIGHT"] = {
+    47541, -- ["Death Coil"], -- 40
+}
+HarmSpells["DEATHKNIGHT"] = {
+    47541, -- ["Death Coil"], -- 40
+    49576, -- ["Death Grip"], -- 30
+}
+
+FriendSpells["DEMONHUNTER"] = {
+}
+HarmSpells["DEMONHUNTER"] = {
+    185123, -- ["Throw Glaive"], -- 30
+}
+
 FriendSpells["DRUID"] = {
     774, -- ["Rejuvenation"], -- 40
     2782, -- ["Remove Corruption"], -- 40
@@ -103,6 +117,16 @@ FriendSpells["MAGE"] = {
 HarmSpells["MAGE"] = {
     44614, --["Frostfire Bolt"], -- 40
     5019, -- ["Shoot"], -- 30
+}
+
+FriendSpells["MONK"] = {
+    115450, -- ["Detox"], -- 40
+    115546, -- ["Provoke"], -- 30
+}
+HarmSpells["MONK"] = {
+    115546, -- ["Provoke"], -- 30
+    115078, -- ["Paralysis"], -- 20
+    100780, -- ["Tiger Palm"], -- 5
 }
 
 FriendSpells["PALADIN"] = {
@@ -153,30 +177,6 @@ FriendSpells["WARLOCK"] = {
 HarmSpells["WARLOCK"] = {
     686, -- ["Shadow Bolt"], -- 40
     5019, -- ["Shoot"], -- 30
-}
-
-FriendSpells["DEATHKNIGHT"] = {
-    47541, -- ["Death Coil"], -- 40
-}
-HarmSpells["DEATHKNIGHT"] = {
-    47541, -- ["Death Coil"], -- 40
-    49576, -- ["Death Grip"], -- 30
-}
-
-FriendSpells["MONK"] = {
-    115450, -- ["Detox"], -- 40
-    115546, -- ["Provoke"], -- 30
-}
-HarmSpells["MONK"] = {
-    115546, -- ["Provoke"], -- 30
-    115078, -- ["Paralysis"], -- 20
-    100780, -- ["Tiger Palm"], -- 5
-}
-
-FriendSpells["DEMONHUNTER"] = {
-}
-HarmSpells["DEMONHUNTER"] = {
-    185123, -- ["Throw Glaive"], -- 30
 }
 
 -- Items [Special thanks to Maldivia for the nice list]
