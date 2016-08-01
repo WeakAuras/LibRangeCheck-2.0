@@ -83,7 +83,7 @@ local HarmSpells = {}
 
 FriendSpells["DRUID"] = {
     774, -- ["Rejuvenation"], -- 40
-    1126, -- ["Mark of the Wild"], -- 30
+    2782, -- ["Remove Corruption"], -- 40
 }
 HarmSpells["DRUID"] = {
     5176, -- ["Wrath"], -- 40
@@ -95,23 +95,18 @@ HarmSpells["DRUID"] = {
 
 FriendSpells["HUNTER"] = {}
 HarmSpells["HUNTER"] = {
-    53351, -- ["Kill Shot"], -- 45
     75, -- ["Auto Shot"], -- 40
 }
 
 FriendSpells["MAGE"] = {
-    475, -- ["Remove Curse"], -- 40
-    1459, -- ["Arcane Brilliance"], -- 30
 }
 HarmSpells["MAGE"] = {
     44614, --["Frostfire Bolt"], -- 40
-    2136, -- ["Fire Blast"], -- 30
     5019, -- ["Shoot"], -- 30
 }
 
 FriendSpells["PALADIN"] = {
-    85673, -- ["Word of Glory"], -- 40
-    20217, -- ["Blessing of Kings"], -- 30
+    19750, -- ["Flash of Light"], -- 40
 }
 HarmSpells["PALADIN"] = {
     62124, -- ["Reckoning"], -- 30
@@ -121,8 +116,8 @@ HarmSpells["PALADIN"] = {
 } 
 
 FriendSpells["PRIEST"] = {
-    2061, -- ["Flash Heal"], -- 40
-    6346, -- ["Fear Ward"], -- 30
+    527, -- ["Purify"], -- 40
+    17, -- ["Power Word: Shield"], -- 40
 }
 HarmSpells["PRIEST"] = {
     589, -- ["Shadow Word: Pain"], -- 40
@@ -133,7 +128,6 @@ FriendSpells["ROGUE"] = {}
 HarmSpells["ROGUE"] = {
     2764, -- ["Throw"], -- 30
     2094, -- ["Blind"], -- 15
-    1752, -- ["Sinister Strike"], -- 5
 }
 
 FriendSpells["SHAMAN"] = {
@@ -141,9 +135,8 @@ FriendSpells["SHAMAN"] = {
     546, -- ["Water Walking"], -- 30
 }
 HarmSpells["SHAMAN"] = {
-    403, -- ["Lightning Bolt"], -- 30
+    403, -- ["Lightning Bolt"], -- 40
     370, -- ["Purge"], -- 30
-    8050, -- ["Flame Shock"], -- 25
     73899, -- ["Primal Strike"],. -- 5
 }
 
@@ -152,7 +145,6 @@ HarmSpells["WARRIOR"] = {
     355, -- ["Taunt"], -- 30
     100, -- ["Charge"], -- 8-25
     5246, -- ["Intimidating Shout"], -- 8
-    78, -- ["Heroic Strike"], -- 5
 }
 
 FriendSpells["WARLOCK"] = {
@@ -169,17 +161,22 @@ FriendSpells["DEATHKNIGHT"] = {
 HarmSpells["DEATHKNIGHT"] = {
     47541, -- ["Death Coil"], -- 40
     49576, -- ["Death Grip"], -- 30
-    45477, -- ["Icy Touch"], -- 30
-    45462, -- ["Plague Strike"], -- 5
 }
 
 FriendSpells["MONK"] = {
-    115546, -- ["Provoke"], -- 40
+    115450, -- ["Detox"], -- 40
+    115546, -- ["Provoke"], -- 30
 }
 HarmSpells["MONK"] = {
-    115546, -- ["Provoke"], -- 40
+    115546, -- ["Provoke"], -- 30
     115078, -- ["Paralysis"], -- 20
-    100780, -- ["Jab"], -- 5
+    100780, -- ["Tiger Palm"], -- 5
+}
+
+FriendSpells["DEMONHUNTER"] = {
+}
+HarmSpells["DEMONHUNTER"] = {
+    185123, -- ["Throw Glaive"], -- 30
 }
 
 -- Items [Special thanks to Maldivia for the nice list]
