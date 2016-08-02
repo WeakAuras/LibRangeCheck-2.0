@@ -250,6 +250,9 @@ local FriendItems  = {
     [80] = {
         35278, -- Reinforced Net
     },
+    [100] = {
+        41058, -- Hyldnir Harpoon
+    },
 }
 
 local HarmItems = {
