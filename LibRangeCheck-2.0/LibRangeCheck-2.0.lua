@@ -82,10 +82,8 @@ local FriendSpells = {}
 local HarmSpells = {}
 
 FriendSpells["DEATHKNIGHT"] = {
-    47541, -- ["Death Coil"], -- 40
 }
 HarmSpells["DEATHKNIGHT"] = {
-    47541, -- ["Death Coil"], -- 40
     49576, -- ["Death Grip"], -- 30
 }
 
