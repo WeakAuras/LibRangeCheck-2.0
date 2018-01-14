@@ -58,7 +58,7 @@ local HarmColor = 'ffff2222'
 -- interact distance based checks. ranges are based on my own measurements (thanks for all the folks who helped me with this)
 local DefaultInteractList = {
     [3] = 8,
-    [2] = 9,
+--    [2] = 9,
     [4] = 28,
 }
 
@@ -513,8 +513,8 @@ local function findSpellIdx(spellName)
 end
 
 -- minRange should be nil if there's no minRange, not 0
-local function addChecker(t, range, minRange, checker)
-    local rc = { ["range"] = range, ["minRange"] = minRange, ["checker"] = checker }
+local function addChecker(t, range, minRange, checker, info)
+    local rc = { ["range"] = range, ["minRange"] = minRange, ["checker"] = checker, ["info"] = info }
     for i = 1, #t do
         local v = t[i]
         if rc.range == v.range then return end
@@ -528,6 +528,18 @@ end
 
 local function createCheckerList(spellList, itemList, interactList)
     local res = {}
+    if itemList then
+        for range, items in pairs(itemList) do
+            for i = 1, #items do
+                local item = items[i]
+                if GetItemInfo(item) then
+                    addChecker(res, range, nil, checkers_Item[item], "item:" .. item)
+                    break
+                end
+            end
+        end
+    end
+    
     if spellList then
         for i = 1, #spellList do
             local sid = spellList[i]
@@ -544,21 +556,9 @@ local function createCheckerList(spellList, itemList, interactList)
                     range = MeleeRange
                 end
                 if minRange then
-                    addChecker(res, range, minRange, checkers_SpellWithMin[spellIdx])
+                    addChecker(res, range, minRange, checkers_SpellWithMin[spellIdx], "spell:" .. sid .. ":" .. tostring(name))
                 else
-                    addChecker(res, range, minRange, checkers_Spell[spellIdx])
-                end
-            end
-        end
-    end
-    
-    if itemList then
-        for range, items in pairs(itemList) do
-            for i = 1, #items do
-                local item = items[i]
-                if GetItemInfo(item) then
-                    addChecker(res, range, nil, checkers_Item[item])
-                    break
+                    addChecker(res, range, minRange, checkers_Spell[spellIdx], "spell:" .. sid .. ":" .. tostring(name))
                 end
             end
         end
@@ -566,7 +566,7 @@ local function createCheckerList(spellList, itemList, interactList)
     
     if interactList and not next(res) then
         for index, range in pairs(interactList) do
-            addChecker(res, range, nil,  checkers_Interact[index])
+            addChecker(res, range, nil,  checkers_Interact[index], "interact:" .. index)
         end
     end
 
@@ -1215,6 +1215,16 @@ function lib:checkAllSpells()
     self:checkSpells(HarmSpells[playerClass], true, HarmColor)
 end
 
+local function dumpCheckerList(checkerList)
+    for _, rc in ipairs(checkerList) do
+        if rc.minRange then
+            print(rc.minRange .. "-" .. rc.range .. ": " .. rc.info)
+        else
+            print(rc.range .. ": " .. rc.info)
+        end
+    end
+end
+
 function lib:checkAllCheckers()
     if not UnitExists("target") then
         print(MAJOR_VERSION .. ": Invalid unit, cannot check")
@@ -1222,14 +1232,20 @@ function lib:checkAllCheckers()
     end
     local _, playerClass = UnitClass("player")
     if UnitCanAttack("player", "target") then
+        print(MAJOR_VERSION .. ": Harm checker list: " .. playerClass)
+        dumpCheckerList(self.harmRC)
         print(MAJOR_VERSION .. ": Checking HarmCheckers: " .. playerClass)
         self:checkItems(HarmItems)
         self:checkSpells(HarmSpells[playerClass])
     elseif UnitCanAssist("player", "target") then
+        print(MAJOR_VERSION .. ": Friend checker list: " .. playerClass)
+        dumpCheckerList(self.friendRC)
         print(MAJOR_VERSION .. ": Checking FriendCheckers: ")
         self:checkItems(FriendItems)
         self:checkSpells(FriendSpells[playerClass])
     else
+        print(MAJOR_VERSION .. ": Misc checker list: " .. playerClass)
+        dumpCheckerList(self.miscRC)
         print(MAJOR_VERSION .. ": Misc unit, cannot check")
         return
     end
