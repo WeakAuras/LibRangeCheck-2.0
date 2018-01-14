@@ -588,7 +588,7 @@ local function getRange(unit, checkerList)
     if lo > #checkerList then
         return 0, checkerList[#checkerList].range
     elseif lo <= 1 then
-        return checkerList[1].range, 999
+        return checkerList[1].range, nil
     else
         return checkerList[lo].range, checkerList[lo - 1].range
     end
