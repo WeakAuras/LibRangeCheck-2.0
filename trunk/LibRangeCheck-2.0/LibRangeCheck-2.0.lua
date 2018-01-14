@@ -575,18 +575,23 @@ end
 
 -- returns minRange, maxRange  or nil
 local function getRange(unit, checkerList)
-    local min, max = 0, nil
-    for i = 1, #checkerList do
-        local rc = checkerList[i]
+    local lo, hi = 1, #checkerList
+    while lo <= hi do
+        local mid = math_floor((lo + hi) / 2)
+        local rc = checkerList[mid]
         if rc.checker(unit) then
-            max = rc.range
-        elseif min > rc.range then
-            return min, max
+            lo = mid + 1
         else
-            return rc.range, max
+            hi = mid - 1
         end
     end
-    return min, max
+    if lo > #checkerList then
+        return 0, checkerList[#checkerList].range
+    elseif lo <= 1 then
+        return checkerList[1].range, 999
+    else
+        return checkerList[lo].range, checkerList[lo - 1].range
+    end
 end
 
 local function updateCheckers(origList, newList)
