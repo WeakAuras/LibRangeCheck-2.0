@@ -66,12 +66,12 @@ local DefaultInteractList = {
 local InteractLists = {
     ["Tauren"] = {
         [3] = 6,
-        [2] = 7,
+--        [2] = 7,
         [4] = 25,
     },
     ["Scourge"] = {
         [3] = 7,
-        [2] = 8,
+--        [2] = 8,
         [4] = 27,
     },
 }
