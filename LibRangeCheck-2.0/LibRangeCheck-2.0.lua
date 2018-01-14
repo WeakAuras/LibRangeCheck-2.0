@@ -52,6 +52,8 @@ end
 
 local UpdateDelay = .5
 local ItemRequestTimeout = 10.0
+local FriendColor = 'ff22ff22'
+local HarmColor = 'ffff2222'
 
 -- interact distance based checks. ranges are based on my own measurements (thanks for all the folks who helped me with this)
 local DefaultInteractList = {
@@ -180,11 +182,25 @@ HarmSpells["WARLOCK"] = {
 -- Items [Special thanks to Maldivia for the nice list]
 
 local FriendItems  = {
-    [5] = {
+    [1] = {
+        90175, -- Gin-Ji Knife Set -- doesn't seem to work for pets (always returns nil)
+    },
+    [2] = {
         37727, -- Ruby Acorn
     },
-    [6] = {
+    [3] = {
+        42732, -- Everfrost Razor
+    },
+    [4] = {
+        129055, -- Shoe Shine Kit
+    },
+    [5] = {
+        8149, -- Voodoo Charm
+        136605, -- Solendra's Compassion
         63427, -- Worgsaw
+    },
+    [7] = {
+        61323, -- Ruby Seeds
     },
     [8] = {
         34368, -- Attuned Crystal Cores
@@ -229,6 +245,9 @@ local FriendItems  = {
     [35] = {
         18904, -- Zorbin's Ultra-Shrinker
     },
+    [38] = {
+        140786, -- Ley Spider Eggs
+    },
     [40] = {
         34471, -- Vial of the Sunwell
     },
@@ -237,6 +256,9 @@ local FriendItems  = {
     },
     [50] = {
         116139, -- Haunting Memento
+    },
+    [55] = {
+        74637, -- Kiryn's Poison Vial
     },
     [60] = {
         32825, -- Soul Cannon
@@ -248,17 +270,39 @@ local FriendItems  = {
     [80] = {
         35278, -- Reinforced Net
     },
+    [90] = {
+        133925, -- Fel Lash
+    },
     [100] = {
         41058, -- Hyldnir Harpoon
+    },
+    [150] = {
+        46954, -- Flaming Spears
+    },
+    [200] = {
+        75208, -- Rancher's Lariat
     },
 }
 
 local HarmItems = {
-    [5] = {
+    [1] = {
+    },
+    [2] = {
         37727, -- Ruby Acorn
     },
-    [6] = {
+    [3] = {
+        42732, -- Everfrost Razor
+    },
+    [4] = {
+        129055, -- Shoe Shine Kit
+    },
+    [5] = {
+        8149, -- Voodoo Charm
+        136605, -- Solendra's Compassion
         63427, -- Worgsaw
+    },
+    [7] = {
+        61323, -- Ruby Seeds
     },
     [8] = {
         34368, -- Attuned Crystal Cores
@@ -287,6 +331,9 @@ local HarmItems = {
         24269, -- Heavy Netherweave Net
         18904, -- Zorbin's Ultra-Shrinker
     },
+    [38] = {
+        140786, -- Ley Spider Eggs
+    },
     [40] = {
         28767, -- The Decapitator
     },
@@ -296,6 +343,9 @@ local HarmItems = {
     },
     [50] = {
         116139, -- Haunting Memento
+    },
+    [55] = {
+        74637, -- Kiryn's Poison Vial
     },
     [60] = {
         32825, -- Soul Cannon
@@ -307,9 +357,20 @@ local HarmItems = {
     [80] = {
         35278, -- Reinforced Net
     },
+    [90] = {
+        133925, -- Fel Lash
+    },
     [100] = {
         33119, -- Malister's Frost Wand
     },
+--[[ -- not much point in enabling these, as the target is lost at 100yd...
+    [150] = {
+        46954, -- Flaming Spears
+    },
+    [200] = {
+        75208, -- Rancher's Lariat
+    },
+]]--
 }
 
 -- This could've been done by checking player race as well and creating tables for those, but it's easier like this
@@ -1096,41 +1157,43 @@ function lib:stopMeasurement()
     self.measurements = nil
 end
 
-function lib:checkItems(itemList, verbose)
+function lib:checkItems(itemList, verbose, color)
     if not itemList then return end
+    color = color or 'ffffffff'
     for range, items in pairsByKeys(itemList) do
         for i = 1, #items do
             local item = items[i]
             local name = GetItemInfo(item)
             if not name then
-                print(MAJOR_VERSION .. ": " .. tostring(item) .. ": " .. tostring(range) .. "yd: |cffeda500not in cache|r")
+                print(MAJOR_VERSION .. ": |c" .. color .. tostring(item) .. "|r: " .. tostring(range) .. "yd: |cffeda500not in cache|r")
             else
                 local res = IsItemInRange(item, "target") 
                 if res == nil or verbose then
                     if res == nil then res = "|cffed0000nil|r" end
-                    print(MAJOR_VERSION .. ": " .. tostring(item) .. ": " .. tostring(name) .. ": " .. tostring(range) .. "yd: " .. tostring(res))
+                    print(MAJOR_VERSION .. ": |c" .. color .. tostring(item) .. ": " .. tostring(name) .. "|r: " .. tostring(range) .. "yd: " .. tostring(res))
                 end
             end
         end
     end
 end
 
-function lib:checkSpells(spellList, verbose)
+function lib:checkSpells(spellList, verbose, color)
     if not spellList then return end
+    color = color or 'ffffffff'
     for i = 1, #spellList do 
         local sid = spellList[i]
         local name, _, _, _, minRange, range = GetSpellInfo(sid)
         if (not name) or (name == "") or (not range) then
-            print(MAJOR_VERSION .. ": " .. tostring(sid) .. ": " .. tostring(range) .. "yd: |cffeda500invalid spell id|r")
+            print(MAJOR_VERSION .. ": |c" .. color .. tostring(sid) .. "|r: " .. tostring(range) .. "yd: |cffeda500invalid spell id|r")
         else
             local spellIdx = self:findSpellIndex(sid)
             if not spellIdx then
-                print(MAJOR_VERSION .. ": " .. tostring(sid) .. ": " .. tostring(name) .. ": " .. tostring(minRange) .. "-" .. tostring(range) .. "yd: |cffeda500not in spellbook|r")
+                print(MAJOR_VERSION .. ": |c" .. color .. tostring(sid) .. ": " .. tostring(name) .. "|r: " .. tostring(minRange) .. "-" .. tostring(range) .. "yd: |cffeda500not in spellbook|r")
             else
                 local res = IsSpellInRange(spellIdx, BOOKTYPE_SPELL, "target")
                 if res == nil or verbose then
                     if res == nil then res = "|cffed0000nil|r" end
-                    print(MAJOR_VERSION .. ": " .. tostring(sid) .. ": " .. tostring(name) .. ": " .. tostring(minRange) .. "-" .. tostring(range) .. "yd: " .. tostring(res))
+                    print(MAJOR_VERSION .. ": |c" .. color .. tostring(sid) .. ": " .. tostring(name) .. "|r: " .. tostring(minRange) .. "-" .. tostring(range) .. "yd: " .. tostring(res))
                 end
             end
         end
@@ -1139,17 +1202,17 @@ end
 
 function lib:checkAllItems()
     print(MAJOR_VERSION .. ": Checking FriendItems...")
-    self:checkItems(FriendItems, true)
+    self:checkItems(FriendItems, true, FriendColor)
     print(MAJOR_VERSION .. ": Checking HarmItems...")
-    self:checkItems(HarmItems, true)
+    self:checkItems(HarmItems, true, HarmColor)
 end
 
 function lib:checkAllSpells()
     local _, playerClass = UnitClass("player")
     print(MAJOR_VERSION .. ": Checking FriendSpells: " .. playerClass)
-    self:checkSpells(FriendSpells[playerClass], true)
+    self:checkSpells(FriendSpells[playerClass], true, FriendColor)
     print(MAJOR_VERSION .. ": Checking HarmSpells..." .. playerClass)
-    self:checkSpells(HarmSpells[playerClass], true)
+    self:checkSpells(HarmSpells[playerClass], true, HarmColor)
 end
 
 function lib:checkAllCheckers()
