@@ -785,10 +785,10 @@ function lib:init(forced)
         -- fall back to interact distance checks
         if playerClass == "HUNTER" or playerRace == "Tauren" then
             -- for hunters, use interact4 as it's safer
-            -- for Taurens interact4 is actually closer than 25yd and interact2 is closer than 8yd, so we can't use that
+            -- for Taurens interact4 is actually closer than 25yd and interact3 is closer than 8yd, so we can't use that
             minRangeCheck = checkers_Interact[4]
         else
-            minRangeCheck = checkers_Interact[2]
+            minRangeCheck = checkers_Interact[3]
         end
     end
 
