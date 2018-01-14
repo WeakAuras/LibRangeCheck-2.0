@@ -1317,6 +1317,21 @@ function lib:updateMeasurements()
     end
 end
 
+local debugprofilestop = debugprofilestop
+function lib:speedTest(numIterations)
+    if not UnitExists("target") then
+        print(MAJOR_VERSION .. ": Invalid unit, cannot check")
+        return
+    end
+    numIterations = numIterations or 10000
+    local start = debugprofilestop()
+    for i = 1, numIterations do
+        self:getRange("target")
+    end
+    local duration = debugprofilestop() - start
+    print("numIterations: " .. tostring(numIterations) .. ", time: " .. tostring(duration))
+end
+
 -- >> DEBUG STUFF
 --@end-do-not-package@ 
 
