@@ -578,25 +578,12 @@ local function getRange(unit, checkerList)
     local min, max = 0, nil
     for i = 1, #checkerList do
         local rc = checkerList[i]
-        if not max or max > rc.range then
-            if rc.minRange then
-                local inRange, inMinRange = rc.checker(unit)
-                if inMinRange then
-                    max = rc.minRange
-                elseif inRange then
-                    min, max = rc.minRange, rc.range
-                elseif min > rc.range then
-                    return min, max
-                else
-                    return rc.range, max
-                end
-            elseif rc.checker(unit) then
-                max = rc.range
-            elseif min > rc.range then
-                return min, max
-            else
-                return rc.range, max
-            end
+        if rc.checker(unit) then
+            max = rc.range
+        elseif min > rc.range then
+            return min, max
+        else
+            return rc.range, max
         end
     end
     return min, max
