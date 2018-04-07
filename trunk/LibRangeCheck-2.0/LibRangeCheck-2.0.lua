@@ -414,6 +414,7 @@ local GetSpecializationInfo = GetSpecializationInfo
 local GetTime = GetTime
 local HandSlotId = GetInventorySlotInfo("HandsSlot")
 local math_floor = math.floor
+local UnitIsVisible = UnitIsVisible
 
 -- temporary stuff
 
@@ -718,9 +719,9 @@ end
 
 -- returns the range estimate as a string
 -- deprecated, use :getRange(unit) instead and build your own strings
--- (checkVisible is not used any more, kept for compatibility only)
+-- @param checkVisible if set to true, then a UnitIsVisible check is made, and **nil** is returned if the unit is not visible
 function lib:getRangeAsString(unit, checkVisible, showOutOfRange)
-    local minRange, maxRange = self:getRange(unit)
+    local minRange, maxRange = self:getRange(unit, checkVisible)
     if not minRange then return nil end
     if not maxRange then
         return showOutOfRange and minRange .. " +" or nil
@@ -912,13 +913,18 @@ end
 
 --- Get a range estimate as **minRange**, **maxRange**.
 -- @param unit the target unit to check range to.
+-- @param checkVisible if set to true, then a UnitIsVisible check is made, and **nil** is returned if the unit is not visible
 -- @return **minRange**, **maxRange** pair if a range estimate could be determined, **nil** otherwise. **maxRange** is **nil** if **unit** is further away than the highest possible range we can check.
 -- Includes checks for unit validity and friendly/enemy status.
 -- @usage
 -- local rc = LibStub("LibRangeCheck-2.0")
 -- local minRange, maxRange = rc:GetRange('target')
-function lib:GetRange(unit)
+-- local minRangeIfVisible, maxRangeIfVisible = rc:GetRange('target', true)
+function lib:GetRange(unit, checkVisible)
     if not UnitExists(unit) then
+        return nil
+    end
+    if checkVisible and not UnitIsVisible(unit) then
         return nil
     end
     if UnitIsDeadOrGhost(unit) then
