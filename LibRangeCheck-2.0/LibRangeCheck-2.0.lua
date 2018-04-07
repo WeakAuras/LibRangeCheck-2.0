@@ -363,14 +363,12 @@ local HarmItems = {
     [100] = {
         33119, -- Malister's Frost Wand
     },
---[[ -- not much point in enabling these, as the target is lost at 100yd...
     [150] = {
         46954, -- Flaming Spears
     },
     [200] = {
         75208, -- Rancher's Lariat
     },
-]]--
 }
 
 -- This could've been done by checking player race as well and creating tables for those, but it's easier like this
