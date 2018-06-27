@@ -52,8 +52,6 @@ end
 
 local UpdateDelay = .5
 local ItemRequestTimeout = 10.0
-local FriendColor = 'ff22ff22'
-local HarmColor = 'ffff2222'
 
 -- interact distance based checks. ranges are based on my own measurements (thanks for all the folks who helped me with this)
 local DefaultInteractList = {
