@@ -48,6 +48,8 @@ if not lib then
     return
 end
 
+local IsClassic = (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC)
+
 -- << STATIC CONFIG
 
 local UpdateDelay = .5
@@ -1325,7 +1327,9 @@ function lib:activate()
         self.frame = frame
         frame:RegisterEvent("LEARNED_SPELL_IN_TAB")
         frame:RegisterEvent("CHARACTER_POINTS_CHANGED")
-        frame:RegisterEvent("PLAYER_TALENT_UPDATE")
+        if not IsClassic then
+            frame:RegisterEvent("PLAYER_TALENT_UPDATE")
+        end
         frame:RegisterEvent("SPELLS_CHANGED")
         local _, playerClass = UnitClass("player")
         if playerClass == "MAGE" or playerClass == "SHAMAN" then
