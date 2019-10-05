@@ -26,7 +26,7 @@ License: Public Domain
 --     print("target is between " .. minRange .. " and " .. maxRange .. " yards")
 -- end
 -- 
--- local meleeChecker = rc:GetFriendMaxChecker(rc.MeleeRange) -- 2 yds
+-- local meleeChecker = rc:GetFriendMaxChecker(rc.MeleeRange) or rc:GetFriendMinChecker(rc.MeleeRange) -- use the closest checker (MinChecker) if no valid Melee checker is found
 -- for i = 1, 4 do
 --     -- TODO: check if unit is valid, etc
 --     if meleeChecker("party" .. i) then
@@ -888,7 +888,7 @@ function lib:GetSmartMinChecker(range)
         getMinChecker(self.miscRC, range))
 end
 
---- Return a checker suitable for in-of-range checking that checks the unit type and calls the appropriate checker (friend/harm/misc).
+--- Return a checker suitable for in-range checking that checks the unit type and calls the appropriate checker (friend/harm/misc).
 -- @param range the range to check for.
 -- @return **checker** function.
 function lib:GetSmartMaxChecker(range)
