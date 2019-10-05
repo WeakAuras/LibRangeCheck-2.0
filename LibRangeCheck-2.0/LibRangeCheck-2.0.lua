@@ -26,7 +26,7 @@ License: Public Domain
 --     print("target is between " .. minRange .. " and " .. maxRange .. " yards")
 -- end
 -- 
--- local meleeChecker = rc:GetFriendMaxChecker(rc.MeleeRange) -- 5 yds
+-- local meleeChecker = rc:GetFriendMaxChecker(rc.MeleeRange) -- 2 yds
 -- for i = 1, 4 do
 --     -- TODO: check if unit is valid, etc
 --     if meleeChecker("party" .. i) then
@@ -76,7 +76,7 @@ local InteractLists = {
     },
 }
 
-local MeleeRange = 5
+local MeleeRange = 2
 
 -- list of friendly spells that have different ranges
 local FriendSpells = {}
@@ -104,7 +104,7 @@ HarmSpells["DRUID"] = {
     339, -- ["Entangling Roots"], -- 35
     6795, -- ["Growl"], -- 30
     33786, -- ["Cyclone"], -- 20
-    22568, -- ["Ferocious Bite"], -- 5
+    22568, -- ["Ferocious Bite"], -- Melee
 }
 
 FriendSpells["HUNTER"] = {}
@@ -126,7 +126,7 @@ FriendSpells["MONK"] = {
 HarmSpells["MONK"] = {
     115546, -- ["Provoke"], -- 30
     115078, -- ["Paralysis"], -- 20
-    100780, -- ["Tiger Palm"], -- 5
+    100780, -- ["Tiger Palm"], -- Melee
 }
 
 FriendSpells["PALADIN"] = {
@@ -136,7 +136,7 @@ HarmSpells["PALADIN"] = {
     62124, -- ["Reckoning"], -- 30
     20271, -- ["Judgement"], -- 30
     853, -- ["Hammer of Justice"], -- 10
-    35395, -- ["Crusader Strike"], -- 5
+    35395, -- ["Crusader Strike"], -- Melee
 } 
 
 FriendSpells["PRIEST"] = {
@@ -161,7 +161,7 @@ FriendSpells["SHAMAN"] = {
 HarmSpells["SHAMAN"] = {
     403, -- ["Lightning Bolt"], -- 40
     370, -- ["Purge"], -- 30
-    73899, -- ["Primal Strike"],. -- 5
+    73899, -- ["Primal Strike"],. -- Melee
 }
 
 FriendSpells["WARRIOR"] = {}
@@ -704,7 +704,7 @@ end
 -- @field
 lib.CHECKERS_CHANGED = "CHECKERS_CHANGED"
 -- "export" it, maybe someone will need it for formatting
---- Constant for Melee range (5yd).
+--- Constant for Melee range (2yd).
 -- @field
 lib.MeleeRange = MeleeRange
 
@@ -1247,7 +1247,11 @@ local function logMeasurementChange(t, t0, key, last, curr)
     print(MAJOR_VERSION .. ": t=" .. ("%.4f"):format(t.stamp) .. ": d=" .. ("%.4f"):format(d) .. ": " .. tostring(key) .. ": " .. tostring(last) .. " ->  " .. tostring(curr))
 end
 
-local GetPlayerMapPosition = GetPlayerMapPosition
+local GetPlayerMapPosition = GetPlayerMapPosition or function(unit)
+    local map = C_Map.GetBestMapForUnit(unit)
+    local pos = C_Map.GetPlayerMapPosition(map, unit)
+    return pos:GetXY()
+end
 function lib:updateMeasurements()
     local now = GetTime() - self.measurementStart
     local x, y = GetPlayerMapPosition("player")
