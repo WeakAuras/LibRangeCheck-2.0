@@ -41,7 +41,7 @@ License: Public Domain
 -- @class file
 -- @name LibRangeCheck-2.0
 local MAJOR_VERSION = "LibRangeCheck-2.0"
-local MINOR_VERSION = tonumber(("$Revision: 206 $"):match("%d+")) + 100000
+local MINOR_VERSION = tonumber(("$Revision: 213 $"):match("%d+")) + 100000
 
 local lib, oldminor = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
 if not lib then return end
@@ -788,7 +788,7 @@ lib.failedItemRequests = {}
 local function checker(unit)
 end
 
---@end-do-not-package@ 
+--@end-do-not-package@
 --- The callback name that is fired when checkers are changed.
 -- @field
 lib.CHECKERS_CHANGED = "CHECKERS_CHANGED"
@@ -1269,7 +1269,7 @@ function lib:checkItems(itemList, verbose, color)
             if not name then
                 print(MAJOR_VERSION .. ": |c" .. color .. tostring(item) .. "|r: " .. tostring(range) .. "yd: |cffeda500not in cache|r")
             else
-                local res = IsItemInRange(item, "target") 
+                local res = IsItemInRange(item, "target")
                 if res == nil or verbose then
                     if res == nil then res = "|cffed0000nil|r" end
                     print(MAJOR_VERSION .. ": |c" .. color .. tostring(item) .. ": " .. tostring(name) .. "|r: " .. tostring(range) .. "yd: " .. tostring(res))
@@ -1282,7 +1282,7 @@ end
 function lib:checkSpells(spellList, verbose, color)
     if not spellList then return end
     color = color or 'ffffffff'
-    for i = 1, #spellList do 
+    for i = 1, #spellList do
         local sid = spellList[i]
         local name, _, _, _, minRange, range = GetSpellInfo(sid)
         if (not name) or (name == "") or (not range) then
@@ -1439,9 +1439,9 @@ function lib:speedTest(numIterations)
 end
 
 -- >> DEBUG STUFF
---@end-do-not-package@ 
+--@end-do-not-package@
 
--- << load-time initialization 
+-- << load-time initialization
 
 function lib:activate()
     if not self.frame then
