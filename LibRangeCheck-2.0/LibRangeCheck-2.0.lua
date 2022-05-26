@@ -682,16 +682,13 @@ local function resetRangeCache()
     wipe(rangeCache)
 end
 
-local function invalidateRangeCache()
-    local time = GetTime()
+local function invalidateRangeCache(elapsed)
     for k, v in pairs(rangeCache) do
-        -- if the entry is older than 5s, clear this data from the cache
-        if time >= v.timeUpdated + 5 then
-            rangeCache[k] = nil
+        v.timeSinceUpdate = v.timeSinceUpdate + elapsed
 
-        -- if the entry is older than 100ms, flag this data as invalid
-        elseif time >= v.timeUpdated + 0.1 then 
-            v.valid = false
+        -- if the entry is older than 5s, clear this data from the cache
+        if v.timeSinceUpdate > 5 then
+            rangeCache[k] = nil
         end
     end
 end
@@ -700,7 +697,7 @@ end
 local function getRange(unit, checkerList)
     local guid = UnitGUID(unit)
     local cacheItem = rangeCache[guid]
-    if cacheItem and cacheItem.valid then
+    if cacheItem and cacheItem.timeSinceUpdate <= 0.1 then
         return cacheItem.minRange, cacheItem.maxRange
     end
 
@@ -725,8 +722,7 @@ local function getRange(unit, checkerList)
         result.minRange = checkerList[lo].range
         result.maxRange = checkerList[lo - 1].range
     end
-    result.timeUpdated = GetTime()
-    result.valid = true
+    result.timeSinceUpdate = 0
     rangeCache[guid] = result
     return result.minRange, result.maxRange
 end
@@ -1544,7 +1540,7 @@ function lib:activate()
         self.cacheResetFrame = frame
 
         frame:SetScript("OnUpdate", function(_, elapsed)
-            invalidateRangeCache()
+            invalidateRangeCache(elapsed)
         end)
 
         frame:Show()
