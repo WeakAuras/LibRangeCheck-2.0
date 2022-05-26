@@ -693,11 +693,13 @@ local function invalidateRangeCache(elapsed)
     end
 end
 
+local getRangeThrottle = 0.1
+
 -- returns minRange, maxRange  or nil
 local function getRange(unit, checkerList)
     local guid = UnitGUID(unit)
     local cacheItem = rangeCache[guid]
-    if cacheItem and cacheItem.timeSinceUpdate <= 0.1 then
+    if cacheItem and cacheItem.timeSinceUpdate <= getRangeThrottle then
         return cacheItem.minRange, cacheItem.maxRange
     end
 
@@ -1084,6 +1086,10 @@ function lib:GetRange(unit, checkVisible, noItems)
     else
         return getRange(unit, self.miscRC)
     end
+end
+
+function lib:SetGetRangeThrottle(timespan)
+    getRangeThrottle = timespan
 end
 
 -- keep this for compatibility
