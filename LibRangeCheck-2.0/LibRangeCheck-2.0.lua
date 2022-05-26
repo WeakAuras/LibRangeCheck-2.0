@@ -682,11 +682,17 @@ local function resetRangeCache()
     wipe(rangeCache)
 end
 
+local function invalidateRangeCache()
+    for _, v in pairs(rangeCache) do
+        v.valid = false
+    end
+end
+
 -- returns minRange, maxRange  or nil
 local function getRange(unit, checkerList)
     local guid = UnitGUID(unit)
     local cacheItem = rangeCache[guid]
-    if cacheItem then
+    if cacheItem and cacheItem.valid then
         return cacheItem.minRange, cacheItem.maxRange
     end
     
@@ -700,7 +706,7 @@ local function getRange(unit, checkerList)
             hi = mid - 1
         end
     end
-    local result = {}
+    local result = cacheItem or {}
     if lo > #checkerList then
         result.minRange = 0
         result.maxRange = checkerList[#checkerList].range
@@ -711,6 +717,7 @@ local function getRange(unit, checkerList)
         result.minRange = checkerList[lo].range
         result.maxRange = checkerList[lo - 1].range
     end
+    result.valid = true
     rangeCache[guid] = result
     return result.minRange, result.maxRange
 end
@@ -1532,7 +1539,7 @@ function lib:activate()
             frame.elapsedSiceCacheReset = frame.elapsedSiceCacheReset + elapsed
             if frame.elapsedSiceCacheReset > 0.1 then
                 frame.elapsedSiceCacheReset = 0
-                resetRangeCache()
+                invalidateRangeCache()
             end
         end)
 
