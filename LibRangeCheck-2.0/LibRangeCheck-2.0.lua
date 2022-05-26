@@ -675,8 +675,19 @@ local function createCheckerList(spellList, itemList, interactList)
     return res
 end
 
+local rangeCache = {}
+
+local function resetRangeCache()
+    wipe(rangeCache)
+end
+
 -- returns minRange, maxRange  or nil
 local function getRange(unit, checkerList)
+    local cacheItem = rangeCache[unit]
+    if cacheItem then
+        return cacheItem.minRange, cacheItem.maxRange
+    end
+    
     local lo, hi = 1, #checkerList
     while lo <= hi do
         local mid = math_floor((lo + hi) / 2)
@@ -687,13 +698,19 @@ local function getRange(unit, checkerList)
             hi = mid - 1
         end
     end
+    local result = {}
     if lo > #checkerList then
-        return 0, checkerList[#checkerList].range
+        result.minRange = 0
+        result.maxRange = checkerList[#checkerList].range
     elseif lo <= 1 then
-        return checkerList[1].range, nil
+        result.minRange = checkerList[1].range
+        result.maxRange = nil
     else
-        return checkerList[lo].range, checkerList[lo - 1].range
+        result.minRange = checkerList[lo].range
+        result.maxRange = checkerList[lo - 1].range
     end
+    rangeCache[unit] = result
+    return result.minRange, result.maxRange
 end
 
 local function updateCheckers(origList, newList)
@@ -1450,6 +1467,7 @@ end
 
 local debugprofilestop = debugprofilestop
 function lib:speedTest(numIterations)
+    resetRangeCache()
     if not UnitExists("target") then
         print(MAJOR_VERSION .. ": Invalid unit, cannot check")
         return
@@ -1486,6 +1504,17 @@ function lib:activate()
             -- Mage and Shaman gladiator gloves modify spell ranges
             frame:RegisterUnitEvent("UNIT_INVENTORY_CHANGED", "player")
         end
+    end
+
+    if not self.cacheResetFrame then
+        local frame = CreateFrame("Frame")
+        self.cacheResetFrame = frame
+
+        frame:SetScript("OnUpdate", function()
+            resetRangeCache()
+        end)
+
+        frame:Show()
     end
 
     initItemRequests()
