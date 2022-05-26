@@ -72,6 +72,7 @@ local UnitCanAttack = UnitCanAttack
 local UnitCanAssist = UnitCanAssist
 local UnitExists = UnitExists
 local UnitIsUnit = UnitIsUnit
+local UnitGUID = UnitGUID
 local UnitIsDeadOrGhost = UnitIsDeadOrGhost
 local CheckInteractDistance = CheckInteractDistance
 local IsSpellInRange = IsSpellInRange
@@ -683,7 +684,8 @@ end
 
 -- returns minRange, maxRange  or nil
 local function getRange(unit, checkerList)
-    local cacheItem = rangeCache[unit]
+    local guid = UnitGUID(unit)
+    local cacheItem = rangeCache[guid]
     if cacheItem then
         return cacheItem.minRange, cacheItem.maxRange
     end
@@ -709,7 +711,7 @@ local function getRange(unit, checkerList)
         result.minRange = checkerList[lo].range
         result.maxRange = checkerList[lo - 1].range
     end
-    rangeCache[unit] = result
+    rangeCache[guid] = result
     return result.minRange, result.maxRange
 end
 
