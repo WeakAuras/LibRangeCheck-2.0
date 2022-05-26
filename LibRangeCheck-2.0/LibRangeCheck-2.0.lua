@@ -1527,8 +1527,13 @@ function lib:activate()
         local frame = CreateFrame("Frame")
         self.cacheResetFrame = frame
 
-        frame:SetScript("OnUpdate", function()
-            resetRangeCache()
+        frame.elapsedSiceCacheReset = 0
+        frame:SetScript("OnUpdate", function(_, elapsed)
+            frame.elapsedSiceCacheReset = frame.elapsedSiceCacheReset + elapsed
+            if frame.elapsedSiceCacheReset > 0.1 then
+                frame.elapsedSiceCacheReset = 0
+                resetRangeCache()
+            end
         end)
 
         frame:Show()
