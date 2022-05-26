@@ -693,16 +693,8 @@ local function invalidateRangeCache(elapsed)
     end
 end
 
-local getRangeThrottle = 0.1
-
 -- returns minRange, maxRange  or nil
 local function getRange(unit, checkerList)
-    local guid = UnitGUID(unit)
-    local cacheItem = rangeCache[guid]
-    if cacheItem and cacheItem.timeSinceUpdate <= getRangeThrottle then
-        return cacheItem.minRange, cacheItem.maxRange
-    end
-
     local lo, hi = 1, #checkerList
     while lo <= hi do
         local mid = math_floor((lo + hi) / 2)
@@ -713,20 +705,13 @@ local function getRange(unit, checkerList)
             hi = mid - 1
         end
     end
-    local result = cacheItem or {}
     if lo > #checkerList then
-        result.minRange = 0
-        result.maxRange = checkerList[#checkerList].range
+        return 0, checkerList[#checkerList].range
     elseif lo <= 1 then
-        result.minRange = checkerList[1].range
-        result.maxRange = nil
+        return checkerList[1].range, nil
     else
-        result.minRange = checkerList[lo].range
-        result.maxRange = checkerList[lo - 1].range
+        return checkerList[lo].range, checkerList[lo - 1].range
     end
-    result.timeSinceUpdate = 0
-    rangeCache[guid] = result
-    return result.minRange, result.maxRange
 end
 
 local function updateCheckers(origList, newList)
@@ -1063,33 +1048,45 @@ function lib:GetRange(unit, checkVisible, noItems)
         return nil
     end
 
+    local guid = UnitGUID(unit)
+    local cacheItem = rangeCache[guid]
+    if cacheItem and cacheItem.timeSinceUpdate <= self.getRangeThrottle then
+        return cacheItem.minRange, cacheItem.maxRange
+    end
+
+    local result = cacheItem or {}
+
     local canAssist = UnitCanAssist("player", unit)
     if UnitIsDeadOrGhost(unit) then
         if canAssist then
-            return getRange(unit, self.resRC)
+            result.minRange, result.maxRange = getRange(unit, self.resRC)
         else
-            return getRange(unit, self.miscRC)
+            result.minRange, result.maxRange = getRange(unit, self.miscRC)
         end
     end
 
     if UnitCanAttack("player", unit) then
-        return getRange(unit, noItems and self.harmNoItemsRC or self.harmRC)
+        result.minRange, result.maxRange = getRange(unit, noItems and self.harmNoItemsRC or self.harmRC)
     elseif UnitIsUnit("pet", unit) then
-        local minRange, maxRange = getRange(unit, noItems and self.friendNoItemsRC or self.friendRC)
-        if minRange or maxRange then
-            return minRange, maxRange
-        else
-            return getRange(unit, self.petRC)
+        result.minRange, result.maxRange = getRange(unit, noItems and self.friendNoItemsRC or self.friendRC)
+        if not result.minRange and not result.maxRange then
+            result.minRange, result.maxRange = getRange(unit, self.petRC)
         end
     elseif canAssist then
-        return getRange(unit, noItems and self.friendNoItemsRC or self.friendRC)
+        result.minRange, result.maxRange = getRange(unit, noItems and self.friendNoItemsRC or self.friendRC)
     else
-        return getRange(unit, self.miscRC)
+        result.minRange, result.maxRange = getRange(unit, self.miscRC)
     end
+
+    result.timeSinceUpdate = 0
+    rangeCache[guid] = result
+    return result.minRange, result.maxRange
 end
 
+--- Sets the time the cache entries for range checks with GetRange are valid
+-- @param timespan the time in seconds (default is 0.1)
 function lib:SetGetRangeThrottle(timespan)
-    getRangeThrottle = timespan
+    self.getRangeThrottle = timespan or 0.1
 end
 
 -- keep this for compatibility
@@ -1522,6 +1519,8 @@ end
 -- << load-time initialization
 
 function lib:activate()
+    self.getRangeThrottle = 0.1
+
     if not self.frame then
         local frame = CreateFrame("Frame")
         self.frame = frame
