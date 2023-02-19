@@ -682,12 +682,11 @@ local function resetRangeCache()
     wipe(rangeCache)
 end
 
-local function invalidateRangeCache(elapsed)
+local function invalidateRangeCache(maxAge)
+    local currentTime = GetTime()
     for k, v in pairs(rangeCache) do
-        v.timeSinceUpdate = v.timeSinceUpdate + elapsed
-
-        -- if the entry is older than 5s, clear this data from the cache
-        if v.timeSinceUpdate > 5 then
+        -- if the entry is older than maxAge, clear this data from the cache
+        if v.updateTime + maxAge < currentTime then
             rangeCache[k] = nil
         end
     end
@@ -1048,9 +1047,10 @@ function lib:GetRange(unit, checkVisible, noItems)
         return nil
     end
 
+    local currentTime = GetTime()
     local guid = UnitGUID(unit)
     local cacheItem = rangeCache[guid]
-    if cacheItem and cacheItem.timeSinceUpdate <= self.getRangeThrottle then
+    if cacheItem and cacheItem.updateTime + self.getRangeThrottle > currentTime then
         return cacheItem.minRange, cacheItem.maxRange
     end
 
@@ -1078,7 +1078,7 @@ function lib:GetRange(unit, checkVisible, noItems)
         result.minRange, result.maxRange = getRange(unit, self.miscRC)
     end
 
-    result.timeSinceUpdate = 0
+    result.updateTime = currentTime
     rangeCache[guid] = result
     return result.minRange, result.maxRange
 end
@@ -1540,15 +1540,10 @@ function lib:activate()
         end
     end
 
-    if not self.cacheResetFrame then
-        local frame = CreateFrame("Frame")
-        self.cacheResetFrame = frame
-
-        frame:SetScript("OnUpdate", function(_, elapsed)
-            invalidateRangeCache(elapsed)
+    if not self.cacheResetTimer then
+        self.cacheResetTimer = C_Timer.NewTicker(5, function()
+            invalidateRangeCache(5)
         end)
-
-        frame:Show()
     end
 
     initItemRequests()
