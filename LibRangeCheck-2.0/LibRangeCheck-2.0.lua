@@ -1466,19 +1466,34 @@ function lib:updateMeasurements()
 end
 
 local debugprofilestop = debugprofilestop
-function lib:speedTest(numIterations)
-    resetRangeCache()
+function lib:speedTest(numBatches, numIterationsPerBatch)
     if not UnitExists("target") then
         print(MAJOR_VERSION .. ": Invalid unit, cannot check")
         return
     end
-    numIterations = numIterations or 10000
-    local start = debugprofilestop()
-    for i = 1, numIterations do
-        self:getRange("target")
+
+    numBatches = numBatches or 10000
+    numIterationsPerBatch = numIterationsPerBatch or 1
+
+    local min, max, total = 999999, 0, 0
+    for b = 1, numBatches do
+        resetRangeCache()
+        local start = debugprofilestop()
+        for i = 1, numIterationsPerBatch do
+            self:getRange("target")
+        end
+        local duration = debugprofilestop() - start
+
+        if duration < min then min = duration end
+        if duration > max then max = duration end
+        total = total + duration
     end
-    local duration = debugprofilestop() - start
-    print("numIterations: " .. tostring(numIterations) .. ", time: " .. tostring(duration))
+
+    local minRange, maxRange = self:getRange("target");
+
+    print(string.format("SpeedTest: numBatches = %d, numIterationsPerBatch = %d", numBatches, numIterationsPerBatch))
+    print(string.format("  Range: min = %d, max = %d", minRange, maxRange))
+    print(string.format("  Time per batch: min = %f, max = %f, total = %f, avg = %f", min, max, total, total/numBatches))
 end
 
 -- >> DEBUG STUFF
