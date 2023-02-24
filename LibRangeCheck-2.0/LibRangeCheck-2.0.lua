@@ -739,6 +739,31 @@ local function getRange(unit, noItems)
     end
 end
 
+local function getCachedRange(unit, noItems, maxCacheAge)
+    -- maxCacheAge has a default of 0.1 and a maximum of 1 second
+    maxCacheAge = maxCacheAge or 0.1;
+    maxCacheAge = maxCacheAge > 1 and 1 or maxCacheAge;
+
+    -- compose cache key out of unit guid and noItems
+    local guid = UnitGUID(unit)
+    local cacheKey = guid .. (noItems and "-1" or "-0")
+    local cacheItem = rangeCache[cacheKey]
+
+    local currentTime = GetTime()
+
+    -- if then cache item is valid return it
+    if cacheItem and cacheItem.updateTime + maxCacheAge > currentTime then
+        return cacheItem.minRange, cacheItem.maxRange
+    end
+
+    -- otherwise create a new or update the exisitng cache item
+    local result = cacheItem or {}
+    result.minRange, result.maxRange = getRange(unit, noItems)
+    result.updateTime = currentTime
+    rangeCache[cacheKey] = result
+    return result.minRange, result.maxRange
+end
+
 local function updateCheckers(origList, newList)
     if #origList ~= #newList then
         wipe(origList)
@@ -1075,24 +1100,7 @@ function lib:GetRange(unit, checkVisible, noItems, maxCacheAge)
         return nil
     end
 
-    maxCacheAge = maxCacheAge or 0.1;
-    maxCacheAge = maxCacheAge > 1 and 1 or maxCacheAge;
-
-    local currentTime = GetTime()
-    local guid = UnitGUID(unit)
-    local cacheKey = guid .. (noItems and "-1" or "-0")
-    local cacheItem = rangeCache[cacheKey]
-    if cacheItem and cacheItem.updateTime + maxCacheAge > currentTime then
-        return cacheItem.minRange, cacheItem.maxRange
-    end
-
-    local result = cacheItem or {}
-
-    result.minRange, result.maxRange = getRange(unit, noItems)
-
-    result.updateTime = currentTime
-    rangeCache[cacheKey] = result
-    return result.minRange, result.maxRange
+    return getCachedRange(unit, noItems, maxCacheAge)
 end
 
 -- keep this for compatibility
