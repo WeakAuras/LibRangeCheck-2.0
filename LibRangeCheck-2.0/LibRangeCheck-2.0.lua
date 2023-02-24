@@ -693,7 +693,7 @@ local function invalidateRangeCache(maxAge)
 end
 
 -- returns minRange, maxRange  or nil
-local function getRange(unit, checkerList)
+local function getRangeWithCheckerList(unit, checkerList)
     local lo, hi = 1, #checkerList
     while lo <= hi do
         local mid = math_floor((lo + hi) / 2)
@@ -710,6 +710,32 @@ local function getRange(unit, checkerList)
         return checkerList[1].range, nil
     else
         return checkerList[lo].range, checkerList[lo - 1].range
+    end
+end
+
+local function getRange(unit, noItems)
+    local canAssist = UnitCanAssist("player", unit)
+    if UnitIsDeadOrGhost(unit) then
+        if canAssist then
+            return getRangeWithCheckerList(unit, lib.resRC)
+        else
+            return getRangeWithCheckerList(unit, lib.miscRC)
+        end
+    end
+
+    if UnitCanAttack("player", unit) then
+        return getRangeWithCheckerList(unit, noItems and lib.harmNoItemsRC or lib.harmRC)
+    elseif UnitIsUnit("pet", unit) then
+        local minRange, maxRange = getRangeWithCheckerList(unit, noItems and lib.friendNoItemsRC or lib.friendRC)
+        if minRange or maxRange then
+            return minRange, maxRange
+        else
+            return getRangeWithCheckerList(unit, lib.petRC)
+        end
+    elseif canAssist then
+        return getRangeWithCheckerList(unit, noItems and lib.friendNoItemsRC or lib.friendRC)
+    else
+        return getRangeWithCheckerList(unit, lib.miscRC)
     end
 end
 
@@ -1062,27 +1088,7 @@ function lib:GetRange(unit, checkVisible, noItems, maxCacheAge)
 
     local result = cacheItem or {}
 
-    local canAssist = UnitCanAssist("player", unit)
-    if UnitIsDeadOrGhost(unit) then
-        if canAssist then
-            result.minRange, result.maxRange = getRange(unit, self.resRC)
-        else
-            result.minRange, result.maxRange = getRange(unit, self.miscRC)
-        end
-    end
-
-    if UnitCanAttack("player", unit) then
-        result.minRange, result.maxRange = getRange(unit, noItems and self.harmNoItemsRC or self.harmRC)
-    elseif UnitIsUnit("pet", unit) then
-        result.minRange, result.maxRange = getRange(unit, noItems and self.friendNoItemsRC or self.friendRC)
-        if not result.minRange and not result.maxRange then
-            result.minRange, result.maxRange = getRange(unit, self.petRC)
-        end
-    elseif canAssist then
-        result.minRange, result.maxRange = getRange(unit, noItems and self.friendNoItemsRC or self.friendRC)
-    else
-        result.minRange, result.maxRange = getRange(unit, self.miscRC)
-    end
+    result.minRange, result.maxRange = getRange(unit, noItems)
 
     result.updateTime = currentTime
     rangeCache[cacheKey] = result
