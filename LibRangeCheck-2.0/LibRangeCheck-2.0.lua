@@ -1049,7 +1049,8 @@ function lib:GetRange(unit, checkVisible, noItems)
 
     local currentTime = GetTime()
     local guid = UnitGUID(unit)
-    local cacheItem = rangeCache[guid]
+    local cacheKey = guid .. (noItems and "-1" or "-0")
+    local cacheItem = rangeCache[cacheKey]
     if cacheItem and cacheItem.updateTime + self.getRangeThrottle > currentTime then
         return cacheItem.minRange, cacheItem.maxRange
     end
@@ -1079,7 +1080,7 @@ function lib:GetRange(unit, checkVisible, noItems)
     end
 
     result.updateTime = currentTime
-    rangeCache[guid] = result
+    rangeCache[cacheKey] = result
     return result.minRange, result.maxRange
 end
 
