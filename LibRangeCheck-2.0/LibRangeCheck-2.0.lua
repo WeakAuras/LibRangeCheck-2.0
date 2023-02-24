@@ -1033,7 +1033,7 @@ end
 -- @param unit the target unit to check range to.
 -- @param checkVisible if set to true, then a UnitIsVisible check is made, and **nil** is returned if the unit is not visible
 -- @param noItems if set to true, no items and only spells are being used for the range check
--- @param maxCacheAge the timespan a cached range value is considered valid (default 0.1 seconds)
+-- @param maxCacheAge the timespan a cached range value is considered valid (default 0.1 seconds, maximun 1 second)
 -- @return **minRange**, **maxRange** pair if a range estimate could be determined, **nil** otherwise. **maxRange** is **nil** if **unit** is further away than the highest possible range we can check.
 -- Includes checks for unit validity and friendly/enemy status.
 -- @usage
@@ -1050,6 +1050,7 @@ function lib:GetRange(unit, checkVisible, noItems, maxCacheAge)
     end
 
     maxCacheAge = maxCacheAge or 0.1;
+    maxCacheAge = maxCacheAge > 1 and 1 or maxCacheAge;
 
     local currentTime = GetTime()
     local guid = UnitGUID(unit)
