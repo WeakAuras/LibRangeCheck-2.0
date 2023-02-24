@@ -1032,13 +1032,15 @@ end
 --- Get a range estimate as **minRange**, **maxRange**.
 -- @param unit the target unit to check range to.
 -- @param checkVisible if set to true, then a UnitIsVisible check is made, and **nil** is returned if the unit is not visible
+-- @param noItems if set to true, no items and only spells are being used for the range check
+-- @param maxCacheAge the timespan a cached range value is considered valid (default 0.1 seconds)
 -- @return **minRange**, **maxRange** pair if a range estimate could be determined, **nil** otherwise. **maxRange** is **nil** if **unit** is further away than the highest possible range we can check.
 -- Includes checks for unit validity and friendly/enemy status.
 -- @usage
 -- local rc = LibStub("LibRangeCheck-2.0")
 -- local minRange, maxRange = rc:GetRange('target')
 -- local minRangeIfVisible, maxRangeIfVisible = rc:GetRange('target', true)
-function lib:GetRange(unit, checkVisible, noItems)
+function lib:GetRange(unit, checkVisible, noItems, maxCacheAge)
     if not UnitExists(unit) then
         return nil
     end
@@ -1047,11 +1049,13 @@ function lib:GetRange(unit, checkVisible, noItems)
         return nil
     end
 
+    maxCacheAge = maxCacheAge or 0.1;
+
     local currentTime = GetTime()
     local guid = UnitGUID(unit)
     local cacheKey = guid .. (noItems and "-1" or "-0")
     local cacheItem = rangeCache[cacheKey]
-    if cacheItem and cacheItem.updateTime + self.getRangeThrottle > currentTime then
+    if cacheItem and cacheItem.updateTime + maxCacheAge > currentTime then
         return cacheItem.minRange, cacheItem.maxRange
     end
 
@@ -1082,12 +1086,6 @@ function lib:GetRange(unit, checkVisible, noItems)
     result.updateTime = currentTime
     rangeCache[cacheKey] = result
     return result.minRange, result.maxRange
-end
-
---- Sets the time the cache entries for range checks with GetRange are valid
--- @param timespan the time in seconds (default is 0.1)
-function lib:SetGetRangeThrottle(timespan)
-    self.getRangeThrottle = timespan or 0.1
 end
 
 -- keep this for compatibility
@@ -1520,8 +1518,6 @@ end
 -- << load-time initialization
 
 function lib:activate()
-    self.getRangeThrottle = 0.1
-
     if not self.frame then
         local frame = CreateFrame("Frame")
         self.frame = frame
